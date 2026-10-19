@@ -11,6 +11,7 @@ A single-page, high-protein meal planner for weight loss: breakfast, lunch, dinn
 - **Customize (bottom):** 65 food tiles with protein per serving and a protein-per-100-kcal bar, a plate panel with meters, suggestions and swaps, and "Save as my default" per meal.
 - **Last 7 days:** saved days stacked by meal against the goal.
 - **Goals:** daily protein, calories (optional Mifflin-St Jeor estimate), current and goal weight with the 0.7-1.0 g/lb range, and the protein split across meals.
+- **Fridge drawer:** track what you have, see days left based on your plan (In stock / Low / Out), a restock list sized to your shopping days, and meals you can make now. Saving a day takes what you ate out of the fridge.
 - **Cook view:** each meal with amounts and steps, a grocery list for 1-7 days, notes for the cook, and "Copy plan as text".
 
 Hosted as a claude.ai artifact, each signed-in person's plan saves to their own account, and the meal board and cook sharing work between people the page is shared with. Opened as a plain file or on GitHub Pages, it saves in the browser only.

@@ -291,6 +291,40 @@ details.settings summary { padding: 14px 16px; cursor: pointer; font-weight: 700
 textarea#notes { min-height: 90px; resize: vertical; }
 #copy-fallback { width: 100%; min-height: 160px; font-family: var(--font-num); font-size: 12px; }
 
+/* Fridge drawer */
+.fridge-btn { display: inline-flex; align-items: center; gap: 6px; }
+.badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--warn); color: var(--surface); font-size: 12px; font-weight: 700; display: inline-grid; place-items: center; font-family: var(--font-num); }
+.scrim { position: fixed; inset: 0; background: color-mix(in srgb, var(--ink) 35%, transparent); z-index: 40; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%); z-index: 41; background: var(--bg); border-left: 1px solid var(--line); overflow-y: auto; display: grid; align-content: start; gap: 14px;
+  padding-top: calc(18px + env(safe-area-inset-top, 0px)); padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  padding-left: 18px; padding-right: max(18px, env(safe-area-inset-right, 0px)); box-shadow: -12px 0 32px color-mix(in srgb, var(--ink) 12%, transparent); }
+.drawer-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.fridge-sum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.fsum { border-radius: 12px; padding: 10px; text-align: center; background: var(--surface); border: 1px solid var(--line); }
+.fsum b { display: block; font-family: var(--font-num); font-size: 22px; font-weight: 500; }
+.fsum span { font-size: 12px; color: var(--muted); }
+.fsum.ok b { color: var(--good); } .fsum.low b { color: var(--carb); } .fsum.out b { color: var(--warn); }
+.frow { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.frow .e { font-size: 24px; font-family: var(--emoji); width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--gc) 14%, var(--surface)); }
+.frow-name { font-weight: 700; font-size: 14px; line-height: 1.25; }
+.frow-meta { font-size: 12px; color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.frow .track { height: 5px; margin-top: 5px; }
+.frow-ctl { display: flex; gap: 4px; align-items: center; }
+.frow-ctl button { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; }
+.pill { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 1px 7px; border-radius: 999px; }
+.pill.ok { background: var(--good-bg); color: var(--good); }
+.pill.low { background: color-mix(in srgb, var(--carb) 18%, var(--surface)); color: var(--carb); }
+.pill.out { background: var(--warn-bg); color: var(--warn); }
+.flist { display: grid; gap: 8px; }
+.fridge-add { display: grid; grid-template-columns: minmax(0, 1fr) 84px auto; gap: 6px; align-items: end; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.fridge-add select, .fridge-add input { padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); min-width: 0; width: 100%; }
+.fridge-add label { font-size: 12px; font-weight: 700; display: grid; gap: 3px; }
+.fset { font-size: 13px; display: flex; gap: 6px 12px; flex-wrap: wrap; align-items: center; color: var(--muted); }
+.fset input { width: 54px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+.make { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
+.pick-fridge { position: absolute; bottom: auto; top: 8px; left: 8px; font-size: 11px; font-weight: 700; background: var(--surface); color: var(--good); border: 1px solid var(--good); padding: 1px 7px; border-radius: 999px; }
+.have { font-size: 12px; color: var(--good); font-weight: 700; margin-left: 6px; white-space: nowrap; }
+
 @media (max-width: 960px) {
   .day, .custom, .cook-grid { grid-template-columns: minmax(0, 1fr); }
   .plate { position: static; }
@@ -321,6 +355,7 @@ textarea#notes { min-height: 90px; resize: vertical; }
     <div class="top-right">
       <span class="me" id="me" hidden></span>
       <span class="sync" id="sync"><i></i><span>Saved on this device</span></span>
+      <button class="btn small fridge-btn" id="open-fridge" type="button" aria-controls="fridge"><span class="emo" aria-hidden="true">🧊</span> Fridge <span class="badge" id="fridge-badge" hidden></span></button>
       <div class="seg" role="group" aria-label="View">
         <button type="button" data-view="plan" aria-pressed="true">My day</button>
         <button type="button" data-view="board" aria-pressed="false">Meal board</button>
@@ -411,6 +446,7 @@ textarea#notes { min-height: 90px; resize: vertical; }
         <div class="row-btns save-row">
           <input type="date" id="save-date" aria-label="Day to save">
           <button class="btn primary small" id="save" type="button">Save today's plan to log</button>
+          <label style="font-size:13px;display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="use-fridge" checked> Take it out of my fridge</label>
           <span class="toast" id="toast"></span>
         </div>
         <div class="chart-box" id="chart"></div>
@@ -576,6 +612,28 @@ textarea#notes { min-height: 90px; resize: vertical; }
   </div>
 </div>
 
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="fridge" hidden aria-labelledby="fridge-head">
+  <div class="drawer-head">
+    <h2 id="fridge-head">Fridge &amp; pantry</h2>
+    <button class="btn small" id="close-fridge" type="button">Close</button>
+  </div>
+  <div class="fridge-sum" id="fridge-sum"></div>
+  <div class="chips" id="fridge-tabs" role="group" aria-label="Fridge view"></div>
+  <div class="flist" id="fridge-body"></div>
+  <form class="fridge-add" id="fridge-add">
+    <label>Add or top up<select id="fa-food"></select></label>
+    <label>Amount<input id="fa-amt" type="number" min="0" step="0.5"></label>
+    <button class="btn small primary" type="submit">Add</button>
+    <span class="muted" id="fa-unit" style="font-size:12px;grid-column:1/-1"></span>
+  </form>
+  <div class="fset">
+    <label>Low when under <input id="f-days" type="number" min="1" max="7" step="1"> days of my plan</label>
+    <label>Shop for <input id="f-shop" type="number" min="1" max="14" step="1"> days</label>
+  </div>
+  <p class="fineprint">Days left = what you have ÷ how much your current plan uses per day. Saving a day in the log takes those amounts out of the fridge.</p>
+</aside>
+
 <script>
 (function () {
   "use strict";
@@ -717,14 +775,19 @@ textarea#notes { min-height: 90px; resize: vertical; }
     return {
       settings: { protein: 200, cal: 2000, weight: null, goalw: null, split: { breakfast: 25, lunch: 30, dinner: 30, snacks: 15 } },
       meals: s.meals, label: s.label, idea: s.idea, defaults: JSON.parse(JSON.stringify(s)),
-      notes: "", log: {}, shareCook: false
+      notes: "", log: {}, shareCook: false, pantry: {}, pset: { restockDays: 2, shopDays: 7 }, deducted: {}
     };
   }
-  const SAVED_KEYS = ["settings", "meals", "label", "idea", "defaults", "notes", "log", "shareCook"];
+  const SAVED_KEYS = ["settings", "meals", "label", "idea", "defaults", "notes", "log", "shareCook", "pantry", "pset", "deducted"];
   const clone = o => JSON.parse(JSON.stringify(o));
   function cleanItems(items) {
     const out = {};
     if (items && typeof items === "object") for (const id in items) { const q = +items[id]; if (BY_ID[id] && q > 0 && q <= 8) out[id] = Math.round(q * 2) / 2; }
+    return out;
+  }
+  function cleanPantry(pn) {
+    const out = {};
+    if (pn && typeof pn === "object") for (const id in pn) { const h = +(pn[id] && pn[id].have); if (BY_ID[id] && h >= 0 && h <= 999) out[id] = { have: Math.round(h * 10) / 10, t: +pn[id].t || 0 }; }
     return out;
   }
   function mergeSaved(s) {
@@ -737,6 +800,9 @@ textarea#notes { min-height: 90px; resize: vertical; }
     MEALS.forEach(m => { out.meals[m.id] = cleanItems(out.meals[m.id]); if (typeof out.label[m.id] !== "string") out.label[m.id] = "Custom"; });
     if (typeof out.log !== "object" || !out.log) out.log = {};
     out.shareCook = !!out.shareCook;
+    out.pantry = cleanPantry(out.pantry);
+    out.pset = Object.assign({ restockDays: 2, shopDays: 7 }, out.pset);
+    if (typeof out.deducted !== "object" || !out.deducted) out.deducted = {};
     return out;
   }
   let localHad = false;
@@ -755,7 +821,7 @@ textarea#notes { min-height: 90px; resize: vertical; }
     return clone(p);
   }
   let state = loadLocal();
-  const ui = { view: "plan", meal: "breakfast", q: "", group: "all", sort: "density", showAll: false, ideaMeal: "all", days: 7, boardMeal: "all", boardSort: "new", cookOf: "me", composing: false };
+  const ui = { fridgeTab: "fridge", view: "plan", meal: "breakfast", q: "", group: "all", sort: "density", showAll: false, ideaMeal: "all", days: 7, boardMeal: "all", boardSort: "new", cookOf: "me", composing: false };
 
   // ---------- Account + shared data (claude.ai artifact runtime) ----------
   const acct = { db: null, user: null, assets: null, uid: null, canWrite: false, isOwner: false, mode: "local" };
@@ -773,7 +839,7 @@ textarea#notes { min-height: 90px; resize: vertical; }
   }
   const myPlanPath = () => `data/users/${acct.uid}/plan`;
   function cookPayload() {
-    return { meals: clone(state.meals), label: clone(state.label), idea: clone(state.idea), notes: state.notes || "", protein: state.settings.protein, cal: state.settings.cal, t: Date.now() };
+    return { meals: clone(state.meals), label: clone(state.label), idea: clone(state.idea), notes: state.notes || "", protein: state.settings.protein, cal: state.settings.cal, pantry: clone(state.pantry), t: Date.now() };
   }
 
   // One write at a time per document, coalescing bursts.
@@ -1025,7 +1091,7 @@ textarea#notes { min-height: 90px; resize: vertical; }
         <div class="menu-scroll" role="group" aria-label="${m.name} options">${list.map(i => {
           const t = totals(i.items), chosen = state.idea[m.id] === i.id, ok = t.p >= tg.p;
           return `<button class="pick" type="button" data-use="${i.id}" aria-pressed="${chosen}" title="${esc(i.why)}">
-            ${ok ? `<span class="pick-check" aria-label="Meets target">✓</span>` : ""}${chosen ? `<span class="pick-chosen">In your day</span>` : ""}
+            ${ok ? `<span class="pick-check" aria-label="Meets target">✓</span>` : ""}${chosen ? `<span class="pick-chosen">In your day</span>` : fridgeOn() && canMake(i.items).ok ? `<span class="pick-fridge">In your fridge</span>` : ""}
             <div class="pick-art">${plateSVG(i.items, m.id)}</div>
             <div class="pick-body">
               <span class="pick-name">${esc(i.n)}</span>
@@ -1307,6 +1373,108 @@ textarea#notes { min-height: 90px; resize: vertical; }
     renderBoard();
   });
 
+  // ---------- Fridge ----------
+  function dailyUse(meals) {
+    const u = {};
+    MEALS.forEach(m => { const it = (meals || {})[m.id] || {}; liveIds(it).forEach(id => { u[id] = (u[id] || 0) + it[id]; }); });
+    return u;
+  }
+  function stockInfo(id, use) {
+    const have = (state.pantry[id] || {}).have || 0, perDay = (use || dailyUse(state.meals))[id] || 0;
+    const days = perDay ? have / perDay : null;
+    let status = "ok";
+    if (have <= 0) status = "out";
+    else if (perDay ? days < state.pset.restockDays : have < 1) status = "low";
+    return { have, perDay, days, status };
+  }
+  function restockItems() {
+    const use = dailyUse(state.meals), ids = new Set([...Object.keys(state.pantry), ...Object.keys(use)]), out = [];
+    ids.forEach(id => {
+      const si = stockInfo(id, use);
+      if (si.status === "ok") return;
+      const target = si.perDay ? si.perDay * state.pset.shopDays : 2;
+      const buy = Math.max(0.5, Math.ceil((target - si.have) * 2) / 2);
+      out.push({ id, buy, si });
+    });
+    return out.sort((a, b) => (a.si.status === "out" ? 0 : 1) - (b.si.status === "out" ? 0 : 1) || BY_ID[a.id].g.localeCompare(BY_ID[b.id].g));
+  }
+  function canMake(items) {
+    const missing = liveIds(items).filter(id => ((state.pantry[id] || {}).have || 0) < items[id]);
+    return { ok: !missing.length, missing };
+  }
+  const fridgeOn = () => Object.keys(state.pantry).length > 0;
+  function addStock(id, servings) {
+    const cur = (state.pantry[id] || {}).have || 0;
+    const v = Math.max(0, Math.round((cur + servings) * 10) / 10);
+    state.pantry[id] = { have: v, t: Date.now() };
+  }
+  function renderFridgeBadge() {
+    const n = fridgeOn() ? restockItems().length : 0;
+    $("fridge-badge").hidden = !n; $("fridge-badge").textContent = n;
+    $("open-fridge").setAttribute("aria-label", n ? `Fridge, ${n} to restock` : "Fridge");
+  }
+  function renderFridge() {
+    renderFridgeBadge();
+    if ($("fridge").hidden) return;
+    const use = dailyUse(state.meals), ids = Object.keys(state.pantry);
+    const counts = { ok: 0, low: 0, out: 0 };
+    ids.forEach(id => counts[stockInfo(id, use).status]++);
+    const rs = restockItems();
+    $("fridge-sum").innerHTML = `<div class="fsum ok"><b>${counts.ok}</b><span>In stock</span></div><div class="fsum low"><b>${counts.low}</b><span>Low</span></div><div class="fsum out"><b>${rs.filter(r => r.si.status === "out").length}</b><span>Out or missing</span></div>`;
+    const ready = IDEAS.filter(i => !i.watch && canMake(i.items).ok);
+    const tabs = [["fridge", "In my fridge"], ["restock", `Restock list${rs.length && fridgeOn() ? " (" + rs.length + ")" : ""}`], ["make", `Make now${ready.length ? " (" + ready.length + ")" : ""}`]];
+    $("fridge-tabs").innerHTML = tabs.map(([id, n]) => `<button class="chip" type="button" data-ftab="${id}" aria-pressed="${ui.fridgeTab === id}">${n}</button>`).join("");
+    let html = "";
+    if (ui.fridgeTab === "fridge") {
+      if (!ids.length) html = `<div class="empty">Your fridge is empty here. Add what you have below, or fill it from your plan in one tap.<div class="row-btns" style="margin-top:10px"><button class="btn small primary" type="button" data-stockplan="1">Stock ${state.pset.shopDays} days of my plan</button></div></div>`;
+      else {
+        const order = { out: 0, low: 1, ok: 2 };
+        html = ids.map(id => ({ id, si: stockInfo(id, use) })).sort((a, b) => order[a.si.status] - order[b.si.status] || BY_ID[a.id].n.localeCompare(BY_ID[b.id].n)).map(({ id, si }) => {
+          const f = BY_ID[id], label = { ok: "In stock", low: "Low", out: "Out" }[si.status];
+          const pct = si.perDay ? Math.min(100, si.days / Math.max(state.pset.shopDays, 1) * 100) : Math.min(100, si.have / 4 * 100);
+          return `<div class="frow" style="--gc:var(--g-${f.g})">
+            <span class="e" aria-hidden="true">${f.e}</span>
+            <div style="min-width:0"><div class="frow-name">${esc(f.n)}</div>
+              <div class="frow-meta"><span class="pill ${si.status}">${label}</span><span class="num">${buyText(f, si.have)}</span>${si.perDay ? `<span>· ${si.days < 10 ? r1(si.days) : r0(si.days)} days left</span>` : `<span>· not in plan</span>`}</div>
+              <div class="track"><div class="fill" style="width:${pct}%;background:var(--${si.status === "ok" ? "good" : si.status === "low" ? "carb" : "warn"})"></div></div></div>
+            <div class="frow-ctl"><button type="button" data-fdec="${id}" aria-label="Use one serving of ${esc(f.n)}">−</button><button type="button" data-finc="${id}" aria-label="Add one serving of ${esc(f.n)}">+</button></div>
+          </div>`;
+        }).join("");
+      }
+    } else if (ui.fridgeTab === "restock") {
+      if (!rs.length) html = `<div class="empty">Nothing to restock. Everything in your plan lasts at least ${state.pset.restockDays} days.</div>`;
+      else html = `<p class="muted" style="font-size:13px">Enough to cover ${state.pset.shopDays} days of your current plan. Tick what you bought, then add it to the fridge.</p>` + rs.map(({ id, buy, si }) => {
+        const f = BY_ID[id];
+        return `<label class="frow" style="--gc:var(--g-${f.g});cursor:pointer">
+          <span class="e" aria-hidden="true">${f.e}</span>
+          <div style="min-width:0"><div class="frow-name">${esc(f.n)}</div><div class="frow-meta"><span class="pill ${si.status}">${si.status === "out" ? (state.pantry[id] ? "Out" : "Need") : "Low"}</span><span>buy <b class="num">${buyText(f, buy)}</b></span>${si.have ? `<span>· have ${buyText(f, si.have)}</span>` : ""}</div></div>
+          <input type="checkbox" data-bought="${id}" data-amt="${buy}" checked aria-label="Bought ${esc(f.n)}">
+        </label>`;
+      }).join("") + `<div class="row-btns"><button class="btn small primary" type="button" id="add-bought">Add ticked items to fridge</button><button class="btn small" type="button" id="copy-restock">Copy list</button><span class="toast" id="ftoast"></span></div>`;
+    } else {
+      const almost = IDEAS.filter(i => !i.watch && !canMake(i.items).ok && canMake(i.items).missing.length === 1);
+      const row = (i, missing) => `<div class="make" style="--mc:${mc(i.meal)}"><div>${plateSVG(i.items, i.meal)}</div><div style="min-width:0"><div class="frow-name">${esc(i.n)}</div><div class="frow-meta"><span style="color:${mc(i.meal)};font-weight:700">${MEAL_BY_ID[i.meal].name}</span><span>· ${r0(totals(i.items).p)} g protein</span>${missing ? `<span>· need ${esc(shortName(BY_ID[missing].n))}</span>` : ""}</div></div><button class="btn small" type="button" data-use="${i.id}">Use</button></div>`;
+      html = (ready.length ? `<span class="eyebrow">Ready to make</span>` + ready.map(i => row(i)).join("") : `<div class="empty">${fridgeOn() ? "Nothing fully in stock yet." : "Add what's in your fridge to see what you can make."}</div>`)
+        + (almost.length ? `<span class="eyebrow" style="margin-top:6px">Missing one thing</span>` + almost.map(i => row(i, canMake(i.items).missing[0])).join("") : "");
+    }
+    $("fridge-body").innerHTML = html;
+    if (document.activeElement !== $("f-days")) $("f-days").value = state.pset.restockDays;
+    if (document.activeElement !== $("f-shop")) $("f-shop").value = state.pset.shopDays;
+  }
+  function renderFridgeAdd() {
+    $("fa-food").innerHTML = GROUPS.map(([g, n]) => `<optgroup label="${n}">${FOODS.filter(f => f.g === g).map(f => `<option value="${f.id}">${f.e} ${esc(f.n)}</option>`).join("")}</optgroup>`).join("");
+    syncAddUnit();
+  }
+  function syncAddUnit() {
+    const f = BY_ID[$("fa-food").value]; if (!f) return;
+    $("fa-amt").value = f.buy[0] * 4;
+    $("fa-unit").textContent = `Amount in ${f.buy[1]}. One serving is ${f.sv}.`;
+  }
+  function openFridge(open) {
+    $("fridge").hidden = !open; $("scrim").hidden = !open;
+    if (open) { renderFridge(); $("close-fridge").focus(); } else $("open-fridge").focus();
+  }
+
   // ---------- Cook view ----------
   function buyText(f, servings) {
     const [amt, unit] = f.buy, total = amt * servings;
@@ -1317,7 +1485,7 @@ textarea#notes { min-height: 90px; resize: vertical; }
     if (ui.cookOf !== "me" && cookPlans[ui.cookOf]) {
       const c = cookPlans[ui.cookOf];
       const meals = {}; MEALS.forEach(m => meals[m.id] = cleanItems((c.meals || {})[m.id]));
-      return { meals, label: c.label || {}, idea: c.idea || {}, notes: String(c.notes || "").slice(0, 2000), protein: +c.protein || 0, other: true };
+      return { meals, pantry: c.pantry, label: c.label || {}, idea: c.idea || {}, notes: String(c.notes || "").slice(0, 2000), protein: +c.protein || 0, other: true };
     }
     return { meals: state.meals, label: state.label, idea: state.idea, notes: state.notes, protein: state.settings.protein, other: false };
   }
@@ -1349,10 +1517,11 @@ textarea#notes { min-height: 90px; resize: vertical; }
         ${steps ? `<div><span class="eyebrow">Steps${label.startsWith("My ") ? " (from the original recipe)" : ""}</span><ol>${steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></div>` : ""}
       </article>`;
     }).join("");
-    const need = groceryNeed(src.meals);
+    const need = groceryNeed(src.meals), pan = src.other ? cleanPantry(src.pantry) : state.pantry;
+    Object.keys(need).forEach(id => { const h = (pan[id] || {}).have || 0; if (h) { need[id] = Math.max(0, need[id] - h); if (!need[id]) need[id] = -1; } });
     $("grocery").innerHTML = GROUPS.map(([g, name]) => {
       const ids = Object.keys(need).filter(id => BY_ID[id].g === g);
-      return ids.length ? `<div><h3>${name}</h3><ul>${ids.map(id => `<li><label><input type="checkbox"> <span class="emo">${BY_ID[id].e}</span> ${esc(BY_ID[id].n)}</label><span class="amt">${buyText(BY_ID[id], need[id])}</span></li>`).join("")}</ul></div>` : "";
+      return ids.length ? `<div><h3>${name}</h3><ul>${ids.map(id => `<li><label><input type="checkbox"> <span class="emo">${BY_ID[id].e}</span> ${esc(BY_ID[id].n)}</label><span class="amt">${need[id] < 0 ? `<span class="have">in fridge ✓</span>` : buyText(BY_ID[id], need[id])}</span></li>`).join("")}</ul></div>` : "";
     }).join("") || `<p class="empty">No meals planned yet.</p>`;
     if (document.activeElement !== $("notes")) $("notes").value = src.notes || "";
     $("notes").readOnly = src.other;
@@ -1379,13 +1548,13 @@ textarea#notes { min-height: 90px; resize: vertical; }
     });
     const d = dayTotals(src.meals), need = groceryNeed(src.meals);
     lines.push(`DAY TOTAL: ${r0(d.p)} g protein, ${r0(d.k)} kcal`, "", `GROCERIES FOR ${ui.days} DAY${ui.days > 1 ? "S" : ""}:`);
-    Object.keys(need).forEach(id => lines.push(`  [ ] ${BY_ID[id].n}: ${buyText(BY_ID[id], need[id])}`));
+    Object.keys(need).forEach(id => { const h = cookSource().other ? 0 : ((state.pantry[id] || {}).have || 0), b = need[id] - h; if (b > 0) lines.push(`  [ ] ${BY_ID[id].n}: ${buyText(BY_ID[id], b)}`); });
     if (src.notes) lines.push("", "NOTES:", src.notes);
     return lines.join("\n");
   }
 
   // ---------- Render + view ----------
-  function renderMealParts() { renderDay(); renderStickers(); renderIdeas(); renderMealTabs(); renderTiles(); renderPlate(); if (ui.view === "cook") renderCook(); }
+  function renderMealParts() { renderFridge(); renderDay(); renderStickers(); renderIdeas(); renderMealTabs(); renderTiles(); renderPlate(); if (ui.view === "cook") renderCook(); }
   function renderAll() { renderMealParts(); renderWeek(); renderSettings(); renderCookShare(); }
   function setView(v) {
     ui.view = v;
@@ -1430,6 +1599,18 @@ textarea#notes { min-height: 90px; resize: vertical; }
     }
     else if (d.use) useIdea(IDEA_BY_ID[d.use]);
     else if (d.share) openComposer(d.share);
+    else if (d.ftab) { ui.fridgeTab = d.ftab; renderFridge(); }
+    else if (d.finc) { addStock(d.finc, 1); persist(); renderMealParts(); }
+    else if (d.fdec) { addStock(d.fdec, -1); persist(); renderMealParts(); }
+    else if (d.stockplan) { const u = dailyUse(state.meals); Object.keys(u).forEach(id => addStock(id, Math.ceil(u[id] * state.pset.shopDays * 2) / 2)); persist(); renderMealParts(); }
+    else if (b.id === "add-bought") {
+      let n = 0; document.querySelectorAll("[data-bought]").forEach(cb => { if (cb.checked) { addStock(cb.dataset.bought, +cb.dataset.amt); n++; } });
+      persist(); ui.fridgeTab = "fridge"; renderMealParts(); flash("toast", `${n} item${n === 1 ? "" : "s"} added to your fridge`);
+    }
+    else if (b.id === "copy-restock") {
+      const text = "RESTOCK LIST\n" + restockItems().map(r => `[ ] ${BY_ID[r.id].n}: ${buyText(BY_ID[r.id], r.buy)}`).join("\n");
+      try { navigator.clipboard.writeText(text).then(() => flash("ftoast", "Copied"), () => flash("ftoast", "Copy blocked here. Use Cook view's Copy plan.", true)); } catch (err) { flash("ftoast", "Copy blocked here.", true); }
+    }
     else if (d.boardmeal) { ui.boardMeal = d.boardmeal; renderBoard(); }
     else if (d.cookof) { ui.cookOf = d.cookof; renderCook(); }
     else if (d.swap) {
@@ -1466,6 +1647,23 @@ textarea#notes { min-height: 90px; resize: vertical; }
   }, true);
 
   $("open-composer").addEventListener("click", () => openComposer(ui.meal));
+  $("open-fridge").addEventListener("click", () => openFridge(true));
+  $("close-fridge").addEventListener("click", () => openFridge(false));
+  $("scrim").addEventListener("click", () => openFridge(false));
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("fridge").hidden) openFridge(false); });
+  $("fa-food").addEventListener("change", syncAddUnit);
+  $("fridge-add").addEventListener("submit", e => {
+    e.preventDefault();
+    const f = BY_ID[$("fa-food").value], amt = parseFloat($("fa-amt").value);
+    if (!f || !(amt > 0)) return;
+    addStock(f.id, amt / f.buy[0]); persist(); ui.fridgeTab = "fridge"; renderMealParts();
+  });
+  ["f-days", "f-shop"].forEach(id => $(id).addEventListener("change", () => {
+    const a = parseInt($("f-days").value, 10), b = parseInt($("f-shop").value, 10);
+    if (a >= 1 && a <= 7) state.pset.restockDays = a;
+    if (b >= 1 && b <= 14) state.pset.shopDays = b;
+    persist(); renderMealParts();
+  }));
   $("boardsort").addEventListener("change", e => { ui.boardSort = e.target.value; renderBoard(); });
   $("clear").addEventListener("click", () => { state.meals[ui.meal] = {}; state.label[ui.meal] = "Custom"; state.idea[ui.meal] = null; persist(); renderMealParts(); });
   $("setdefault").addEventListener("click", () => {
@@ -1485,8 +1683,14 @@ textarea#notes { min-height: 90px; resize: vertical; }
   $("save-date").value = today();
   $("save").addEventListener("click", () => {
     const d = $("save-date").value || today();
-    state.log[d] = clone(state.meals); persist(); renderWeek(); renderStickers();
-    flash("toast", `Saved for ${new Date(d + "T12:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}`);
+    state.log[d] = clone(state.meals);
+    let note = "";
+    if ($("use-fridge").checked && fridgeOn()) {
+      if (state.deducted[d]) note = " (fridge already updated for this day)";
+      else { const u = dailyUse(state.meals); Object.keys(u).forEach(id => { if (state.pantry[id]) addStock(id, -u[id]); }); state.deducted[d] = 1; note = " and updated your fridge"; }
+    }
+    persist(); renderWeek(); renderStickers(); renderFridge();
+    flash("toast", `Saved for ${new Date(d + "T12:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}${note}`);
   });
   function readSettings() {
     const s = state.settings;
@@ -1529,7 +1733,7 @@ textarea#notes { min-height: 90px; resize: vertical; }
     catch (err) { fallback(); }
   });
 
-  renderGroupSelect(); renderAll(); setView("plan"); renderBoard();
+  renderGroupSelect(); renderFridgeAdd(); renderAll(); setView("plan"); renderBoard();
   initAccount();
 })();
 </script>
