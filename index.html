@@ -7,58 +7,62 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
 <style>
 /* Layout: three views. My day = plate cards around a protein ring, power-food stickers, ideas, then the customizer at the bottom.
    Meal board = a photo/plate feed people like and copy. Cook view = recipe + grocery sheet. */
+/* Look: soft "yogurt" pastels, rounded type, cards lifted by shadow instead of borders. */
 :root {
-  --bg: #F3F5F1;
+  --bg: #F7F4FB;
   --surface: #FFFFFF;
-  --sunk: #E9EDE7;
-  --ink: #16201A;
-  --muted: #5A6760;
-  --line: #D6DED7;
-  --accent: #2E47C2;
-  --protein: #2E47C2;
-  --carb: #B97C0C;
-  --fat: #6F8126;
-  --fiber: #23804F;
-  --good: #1D7547;
-  --warn: #AE4E14;
-  --good-bg: #DFF0E6;
-  --warn-bg: #FBE8DA;
-  --gold: #C99A16;
-  --heart: #D23F63;
-  --m-breakfast: #D18F12;
-  --m-lunch: #24946B;
-  --m-dinner: #7A4CC2;
-  --m-snacks: #C24576;
-  --g-dairy: #3E7BD6; --g-meat: #C8553D; --g-eggs: #D19A12; --g-plant: #6E8A22;
-  --g-fruit: #D14774; --g-veg: #2F9A5C; --g-grain: #B07D24; --g-fat: #8A6BB8;
-  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
-  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
-  --font-num: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --sunk: #F0ECF6;
+  --ink: #2A2440;
+  --muted: #776F8C;
+  --line: #E7E1F0;
+  --accent: #5B62E8;
+  --protein: #5B62E8;
+  --carb: #D9962B;
+  --fat: #8FA23A;
+  --fiber: #2FA36F;
+  --good: #23935F;
+  --warn: #D2643A;
+  --good-bg: #E1F5EA;
+  --warn-bg: #FCEBE2;
+  --gold: #D9A520;
+  --heart: #E5527A;
+  --m-breakfast: #EDA33C;
+  --m-lunch: #35B587;
+  --m-dinner: #8D6BE0;
+  --m-snacks: #EC6D9E;
+  --g-dairy: #5A92E6; --g-meat: #E2775D; --g-eggs: #E8B230; --g-plant: #8DAA35;
+  --g-fruit: #EB6C93; --g-veg: #3DB477; --g-grain: #CF9A3E; --g-fat: #9C80D9;
+  --shadow: 0 1px 2px rgba(42, 36, 64, .05), 0 10px 28px -14px rgba(42, 36, 64, .22);
+  --font-display: "Fredoka", "Avenir Next Rounded", "Nunito", system-ui, sans-serif;
+  --font-body: "Nunito", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-num: "Nunito", "Avenir Next", system-ui, sans-serif;
   --emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
-  --r: 14px;
+  --r: 22px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0E1311; --surface: #161E1A; --sunk: #1F2823; --ink: #E4ECE7; --muted: #97A59E; --line: #2A3530;
-    --accent: #93A4FF; --protein: #93A4FF; --carb: #E6B04C; --fat: #B4C56A; --fiber: #62C391;
-    --good: #66C795; --warn: #F2985F; --good-bg: #163126; --warn-bg: #3A2416; --gold: #E9C25A; --heart: #F27596;
-    --m-breakfast: #EDB24A; --m-lunch: #4FC497; --m-dinner: #B091F0; --m-snacks: #EE7FA9;
-    --g-dairy: #7FA9F0; --g-meat: #EE8A72; --g-eggs: #EDC152; --g-plant: #AFC65A;
-    --g-fruit: #EF86A6; --g-veg: #66C78E; --g-grain: #DDB05C; --g-fat: #B79CE6;
+    --bg: #16131E; --surface: #211C2C; --sunk: #2A2437; --ink: #EFEAF8; --muted: #A79FBC; --line: #362F46;
+    --accent: #9EA3FF; --protein: #9EA3FF; --carb: #EDB660; --fat: #BACB6C; --fiber: #6BCF9B;
+    --good: #6BCF9B; --warn: #F39A72; --good-bg: #1C3329; --warn-bg: #3C2620; --gold: #EDC660; --heart: #F587A8;
+    --m-breakfast: #F2BA62; --m-lunch: #5DCFA2; --m-dinner: #B39BF2; --m-snacks: #F395BC;
+    --g-dairy: #8CB4F2; --g-meat: #F09C86; --g-eggs: #F1CC6A; --g-plant: #B7CF64;
+    --g-fruit: #F39AB6; --g-veg: #73D3A0; --g-grain: #E3BC72; --g-fat: #BCA7EE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 30px -16px rgba(0, 0, 0, .6);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0E1311; --surface: #161E1A; --sunk: #1F2823; --ink: #E4ECE7; --muted: #97A59E; --line: #2A3530;
-  --accent: #93A4FF; --protein: #93A4FF; --carb: #E6B04C; --fat: #B4C56A; --fiber: #62C391;
-  --good: #66C795; --warn: #F2985F; --good-bg: #163126; --warn-bg: #3A2416; --gold: #E9C25A; --heart: #F27596;
-  --m-breakfast: #EDB24A; --m-lunch: #4FC497; --m-dinner: #B091F0; --m-snacks: #EE7FA9;
-  --g-dairy: #7FA9F0; --g-meat: #EE8A72; --g-eggs: #EDC152; --g-plant: #AFC65A;
-  --g-fruit: #EF86A6; --g-veg: #66C78E; --g-grain: #DDB05C; --g-fat: #B79CE6;
+  --bg: #16131E; --surface: #211C2C; --sunk: #2A2437; --ink: #EFEAF8; --muted: #A79FBC; --line: #362F46;
+  --accent: #9EA3FF; --protein: #9EA3FF; --carb: #EDB660; --fat: #BACB6C; --fiber: #6BCF9B;
+  --good: #6BCF9B; --warn: #F39A72; --good-bg: #1C3329; --warn-bg: #3C2620; --gold: #EDC660; --heart: #F587A8;
+  --m-breakfast: #F2BA62; --m-lunch: #5DCFA2; --m-dinner: #B39BF2; --m-snacks: #F395BC;
+  --g-dairy: #8CB4F2; --g-meat: #F09C86; --g-eggs: #F1CC6A; --g-plant: #B7CF64;
+  --g-fruit: #F39AB6; --g-veg: #73D3A0; --g-grain: #E3BC72; --g-fat: #BCA7EE;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 30px -16px rgba(0, 0, 0, .6);
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -342,6 +346,54 @@ textarea#notes { min-height: 90px; resize: vertical; }
   .composer-art { max-width: 220px; justify-self: center; width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+
+/* ---- Cute pass ---- */
+body { font-size: 15.5px; }
+h1 { font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-weight: 600; letter-spacing: 0; }
+h3 { font-weight: 600; }
+.num { font-variant-numeric: tabular-nums; }
+.day-ring, .meal, .pick, .sticker, .panel, .plate, .idea, .post, .composer, details.settings, .cook-meal, .frow, .make, .fridge-add, .fsum, .fold { border-color: transparent; box-shadow: var(--shadow); }
+.pick { border-width: 3px; }
+.pick[aria-pressed="true"] { border-color: var(--mc); }
+.meal { border-radius: 26px; padding: 18px; }
+.meal::before { height: 0; }
+.meal { background: linear-gradient(160deg, color-mix(in srgb, var(--mc) 13%, var(--surface)) 0%, var(--surface) 55%); }
+.meal-title { font-weight: 600; font-size: 20px; }
+.meal-bar .p { font-family: var(--font-display); font-weight: 600; font-size: 26px; }
+.track { height: 10px; border-radius: 999px; }
+.fill { border-radius: 999px; }
+.meal-actions .btn { background: transparent; border-color: color-mix(in srgb, var(--mc) 35%, var(--line)); color: var(--ink); }
+.meal-actions .btn:hover { background: color-mix(in srgb, var(--mc) 12%, var(--surface)); border-color: var(--mc); }
+.tag { border-radius: 999px; letter-spacing: .04em; }
+.greet { font-family: var(--font-display); font-weight: 500; font-size: 17px; color: var(--muted); }
+.greet b { color: var(--ink); font-weight: 600; }
+.day-ring { border-radius: 30px; background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--accent) 9%, var(--surface)) 0%, var(--surface) 70%); }
+.day-ring svg text { font-family: var(--font-display); }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.pill-stat { background: var(--sunk); border-radius: 999px; padding: 6px 12px; font-size: 13px; color: var(--muted); }
+.pill-stat b { color: var(--ink); font-weight: 800; }
+.day-ring.met svg { animation: pop .6s ease; }
+@keyframes pop { 0% { transform: scale(.94); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
+.pick-name, .sticker .sn { font-family: var(--font-display); font-weight: 600; }
+.pick-stats .p { font-family: var(--font-display); font-weight: 600; font-size: 22px; }
+.menu-row-head h3 { font-size: 22px; }
+.seg { box-shadow: var(--shadow); border-color: transparent; }
+.btn { border-radius: 999px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.fold { background: var(--surface); border-radius: var(--r); }
+.fold > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 14px; padding: 16px 20px; }
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary .ficon { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 22px; font-family: var(--emoji); background: var(--sunk); flex: none; }
+.fold > summary h2 { font-size: 19px; }
+.fold > summary p { font-size: 13px; color: var(--muted); }
+.fold > summary::after { content: "+"; margin-left: auto; font-family: var(--font-display); font-size: 24px; color: var(--muted); }
+.fold[open] > summary::after { content: "−"; }
+.fold > .fold-body { padding: 4px 20px 22px; display: grid; gap: 16px; }
+.folds { display: grid; gap: 14px; }
+@media (prefers-reduced-motion: reduce) { .day-ring.met svg { animation: none; } }
 </style>
 </head>
 <body>
@@ -349,7 +401,7 @@ textarea#notes { min-height: 90px; resize: vertical; }
 
   <header class="top">
     <div class="top-left">
-      <span class="eyebrow">High-protein meals, planned and shared</span>
+      <span class="greet" id="greet">Hi there <span class="emo">👋</span></span>
       <h1>Protein Meal Planner</h1>
     </div>
     <div class="top-right">
@@ -369,7 +421,7 @@ textarea#notes { min-height: 90px; resize: vertical; }
     <section class="day" aria-label="Today's plan">
       <div class="day-ring">
         <svg id="dayring" viewBox="0 0 240 240" role="img" aria-label="Daily protein"></svg>
-        <div class="day-stats" id="daystats"></div>
+        <div id="daystats" style="width:100%"></div>
       </div>
       <div class="meals" id="meals"></div>
     </section>
@@ -390,11 +442,10 @@ textarea#notes { min-height: 90px; resize: vertical; }
       <div class="stickers" id="stickers"></div>
     </section>
 
-    <section aria-labelledby="c-head" id="customize">
-      <div class="section-head">
-        <h2 id="c-head">Customize a meal</h2>
-        <p class="muted">Pick a meal, then tap + on any food. The bar under each food shows protein per 100 calories: longer means more protein for the calories.</p>
-      </div>
+    <div class="folds">
+    <details class="fold" id="customize">
+      <summary><span class="ficon" aria-hidden="true">🥄</span><span><h2>Customize a meal</h2><p>Build your own plate food by food</p></span></summary>
+      <div class="fold-body">
       <div class="custom">
         <div class="shelf">
           <div class="mealtabs" id="mealtabs" role="group" aria-label="Meal to customize"></div>
@@ -435,13 +486,12 @@ textarea#notes { min-height: 90px; resize: vertical; }
           </div>
         </aside>
       </div>
-    </section>
-
-    <section aria-labelledby="w-head">
-      <div class="section-head">
-        <h2 id="w-head">Last 7 days</h2>
-        <p class="muted">Save each day's plan to track protein by meal and unlock power-food stickers.</p>
       </div>
+    </details>
+
+    <details class="fold" id="weekfold">
+      <summary><span class="ficon" aria-hidden="true">📅</span><span><h2>Last 7 days</h2><p>Save each day to track protein and fill stickers</p></span></summary>
+      <div class="fold-body">
       <div class="panel">
         <div class="row-btns save-row">
           <input type="date" id="save-date" aria-label="Day to save">
@@ -451,11 +501,13 @@ textarea#notes { min-height: 90px; resize: vertical; }
         </div>
         <div class="chart-box" id="chart"></div>
       </div>
-    </section>
+      </div>
+    </details>
 
-    <section aria-label="Settings">
-      <details class="settings" id="settings">
-        <summary>Goals: protein, calories and how they split across meals</summary>
+    <details class="fold" id="goalsfold">
+      <summary><span class="ficon" aria-hidden="true">🎯</span><span><h2>Goals</h2><p>Protein, calories and the split across meals</p></span></summary>
+      <div class="fold-body">
+      <div class="settings" id="settings">
         <div class="settings-body">
           <div class="fields">
             <div class="field">
@@ -498,11 +550,13 @@ textarea#notes { min-height: 90px; resize: vertical; }
             <div class="row-btns"><button class="btn small" id="e-run" type="button">Estimate and use</button><span class="muted" id="e-out" style="font-size:13px"></span></div>
           </div>
         </div>
-      </details>
-    </section>
+      </div>
+      </div>
+    </details>
 
-    <section aria-labelledby="ev-head">
-      <div class="section-head"><h2 id="ev-head">What the research says</h2></div>
+    <details class="fold" id="researchfold">
+      <summary><span class="ficon" aria-hidden="true">📚</span><span><h2>What the research says</h2><p>Why 200 g, and what really drives weight loss</p></span></summary>
+      <div class="fold-body">
       <div class="evidence">
         <div class="fact">
           <span class="claim">0.7-1.0 g per lb is the top of the studied range.</span>
@@ -526,7 +580,9 @@ textarea#notes { min-height: 90px; resize: vertical; }
         </div>
       </div>
       <p class="fineprint" style="margin-top:18px">Planning tool, not medical advice. High protein intake is generally considered safe for healthy kidneys; if you have kidney disease, diabetes or take diet-sensitive medication, check your targets with a doctor or registered dietitian.</p>
-    </section>
+      </div>
+    </details>
+    </div>
   </div>
 
   <!-- ================= MEAL BOARD ================= -->
@@ -889,6 +945,7 @@ textarea#notes { min-height: 90px; resize: vertical; }
           const el = $("me"); el.hidden = false; el.innerHTML = "";
           const img = document.createElement("img"); img.src = me.avatarUrl; img.alt = "";
           const nm = document.createElement("span"); nm.textContent = me.name || "You";
+          if (me.name) { const g = $("greet"); g.textContent = ""; const bb = document.createElement("b"); bb.textContent = me.name.split(" ")[0]; const em = document.createElement("span"); em.className = "emo"; em.textContent = " 👋"; g.append("Hi ", bb, em); }
           el.append(img, nm);
         }
         const c = await user.can("data.write");
@@ -1015,15 +1072,15 @@ textarea#notes { min-height: 90px; resize: vertical; }
     });
     const met = tot.p >= goal;
     $("dayring").innerHTML = `<circle cx="120" cy="120" r="${R}" fill="none" stroke="var(--sunk)" stroke-width="22"></circle>${arcs}
-      <text x="120" y="112" text-anchor="middle" font-size="44" fill="var(--ink)">${r0(tot.p)}</text>
-      <text x="120" y="138" text-anchor="middle" font-size="13" fill="var(--muted)">of ${goal} g protein</text>
-      <text x="120" y="160" text-anchor="middle" font-size="12" fill="${met ? "var(--good)" : "var(--muted)"}">${met ? "goal met ✓" : r0(goal - tot.p) + " g to go"}</text>`;
+      ${met ? `<text x="120" y="78" text-anchor="middle" font-size="26" style="font-family:var(--emoji)">🎉</text>` : ""}<text x="120" y="118" text-anchor="middle" font-size="48" font-weight="600" fill="var(--ink)">${r0(tot.p)}</text>
+      <text x="120" y="142" text-anchor="middle" font-size="14" fill="var(--muted)">of ${goal} g protein</text>
+      <text x="120" y="164" text-anchor="middle" font-size="14" font-weight="600" fill="${met ? "var(--good)" : "var(--muted)"}">${met ? "goal met!" : r0(goal - tot.p) + " g to go"}</text>`;
     const pctP = tot.k ? r0(tot.p * 4 / tot.k * 100) : 0;
-    $("daystats").innerHTML = `
-      <div class="stat"><b>${r0(tot.k)}</b><span>of ${s.cal} kcal</span></div>
-      <div class="stat"><b>${r0(Math.max(0, s.cal - tot.k))}</b><span>kcal left</span></div>
-      <div class="stat"><b>${pctP}%</b><span>calories from protein</span></div>
-      <div class="stat"><b>${r0(tot.fb)} g</b><span>fiber (aim ${Math.round(s.cal / 1000 * 14)})</span></div>`;
+    $("daystats").innerHTML = `<div class="pills">
+      <span class="pill-stat"><b>${r0(tot.k)}</b> / ${s.cal} kcal</span>
+      <span class="pill-stat"><b>${r0(tot.fb)} g</b> fiber</span>
+      <span class="pill-stat"><b>${pctP}%</b> from protein</span></div>`;
+    document.querySelector(".day-ring").classList.toggle("met", met);
     $("meals").innerHTML = MEALS.map(m => {
       const items = state.meals[m.id] || {}, t = totals(items), tg = mealTargets(m.id), ids = byProtein(items);
       const ok = t.p >= tg.p;
@@ -1031,14 +1088,14 @@ textarea#notes { min-height: 90px; resize: vertical; }
         <div class="art">${plateSVG(items, m.id)}</div>
         <div class="meal-head"><span class="meal-name">${m.name}</span>${ok ? `<span class="tag good">On target</span>` : ids.length ? `<span class="tag">${r0(tg.p - t.p)} g short</span>` : ""}</div>
         <div class="meal-title">${ids.length ? esc(state.label[m.id] || "Custom") : "Nothing planned"}</div>
-        <div><div class="meal-foods">${ids.length ? ids.map(id => esc(shortName(BY_ID[id].n))).join(" · ") : "Pick an idea below or customize at the bottom."}</div>${miniStickers(items)}</div>
+        <div>${ids.length ? miniStickers(items) : `<div class="meal-foods">Pick one below.</div>`}</div>
         <div class="meal-bar">
           <div class="row"><span><span class="p">${r0(t.p)}</span> <span class="muted">/ ${tg.p} g protein</span></span><span class="num muted">${r0(t.k)} kcal</span></div>
           <div class="track"><div class="fill" style="width:${tg.p ? Math.min(100, t.p / tg.p * 100) : 0}%;background:${mc(m.id)}"></div></div>
         </div>
         <div class="meal-actions">
-          <button class="btn small" type="button" data-next="${m.id}">Swap ↻</button>
-          <button class="btn small" type="button" data-edit="${m.id}">Customize</button>
+          <button class="btn small" type="button" data-next="${m.id}">↻ Swap</button>
+          <button class="btn small" type="button" data-edit="${m.id}">Edit</button>
           ${ids.length ? `<button class="btn small" type="button" data-share="${m.id}">Share</button>` : ""}
         </div>
       </article>`;
@@ -1592,7 +1649,7 @@ textarea#notes { min-height: 90px; resize: vertical; }
     else if (d.inc) changeFood(d.inc, 0.5);
     else if (d.dec) changeFood(d.dec, -0.5);
     else if (d.meal) { ui.meal = d.meal; renderMealTabs(); renderTiles(); renderPlate(); }
-    else if (d.edit) { ui.meal = d.edit; renderMealTabs(); renderTiles(); renderPlate(); $("customize").scrollIntoView({ behavior: smooth() }); }
+    else if (d.edit) { ui.meal = d.edit; $("customize").open = true; renderMealTabs(); renderTiles(); renderPlate(); $("customize").scrollIntoView({ behavior: smooth() }); }
     else if (d.next) {
       const list = IDEAS.filter(i => i.meal === d.next && !i.watch), cur = list.findIndex(i => i.id === state.idea[d.next]);
       useIdea(list[(cur + 1) % list.length]);
