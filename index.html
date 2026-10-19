@@ -366,6 +366,10 @@ h3 { font-weight: 600; }
 .meal-actions .btn { background: transparent; border-color: color-mix(in srgb, var(--mc) 35%, var(--line)); color: var(--ink); }
 .meal-actions .btn:hover { background: color-mix(in srgb, var(--mc) 12%, var(--surface)); border-color: var(--mc); }
 .tag { border-radius: 999px; letter-spacing: .04em; }
+.quicklog { width: 100%; display: grid; gap: 8px; text-align: left; background: var(--sunk); border-radius: 16px; padding: 12px; }
+.quicklog label { display: grid; gap: 3px; font-size: 12px; font-weight: 700; }
+.quicklog select, .quicklog input { padding: 7px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); min-width: 0; width: 100%; }
+.ql-row { display: grid; grid-template-columns: 1fr 90px; gap: 8px; }
 .meal-actions .btn.ate { margin-left: auto; background: var(--mc); border-color: var(--mc); color: #fff; }
 .meal-actions .btn.ate[aria-pressed="true"] { background: var(--good-bg); border-color: var(--good); color: var(--good); }
 .greet { font-family: var(--font-display); font-weight: 500; font-size: 17px; color: var(--muted); }
@@ -424,6 +428,17 @@ h3 { font-weight: 600; }
       <div class="day-ring">
         <svg id="dayring" viewBox="0 0 240 240" role="img" aria-label="Daily protein"></svg>
         <div id="daystats" style="width:100%"></div>
+        <button class="btn small primary" id="ql-open" type="button">＋ Log what I ate</button>
+        <form class="quicklog" id="quicklog" hidden>
+          <label>Food<select id="ql-food"></select></label>
+          <div class="ql-row">
+            <label>Meal<select id="ql-meal"></select></label>
+            <label>Servings<input id="ql-qty" type="number" min="0.5" max="8" step="0.5" value="1"></label>
+          </div>
+          <span class="muted" id="ql-info" style="font-size:12px"></span>
+          <div class="row-btns"><button class="btn small primary" type="submit">Log it</button><button class="btn small" type="button" id="ql-cancel">Cancel</button></div>
+        </form>
+        <span class="toast" id="ql-toast"></span>
       </div>
       <div class="meals" id="meals"></div>
     </section>
@@ -708,12 +723,15 @@ h3 { font-weight: 600; }
     F("gy0", "dairy", "blds", "🥣", "Greek yogurt, plain nonfat", "6 oz (170 g)", 100, 17, 6, 0.7, 0, 0, [6, "oz"]),
     F("gy2", "dairy", "bls", "🥣", "Greek yogurt, plain 2%", "6 oz (170 g)", 130, 17, 6, 3.5, 0, 0, [6, "oz"]),
     F("gyv", "dairy", "bs", "🍦", "Greek yogurt, vanilla", "5.3 oz cup", 120, 12, 16, 0, 0, 9, [1, "cup"], { swap: "gy0" }),
+    F("oikospro", "dairy", "blds", "🥄", "Oikos Pro yogurt cup", "5.3 oz cup", 130, 20, 6, 3, 0, 0, [1, "cup"]),
+    F("oikos0", "dairy", "blds", "🥄", "Oikos Triple Zero yogurt cup", "5.3 oz cup", 90, 15, 7, 0, 0, 0, [1, "cup"]),
     F("skyr", "dairy", "bs", "🥛", "Icelandic skyr, plain", "5.3 oz cup", 90, 16, 6, 0, 0, 0, [1, "cup"]),
     F("cott", "dairy", "bls", "🧀", "Cottage cheese 2%", "1/2 cup", 92, 12, 5, 2.5, 0, 0, [0.5, "cup"]),
     F("string", "dairy", "s", "🧀", "String cheese, part-skim", "1 stick", 80, 7, 1, 5.5, 0, 0, [1, "stick"]),
     F("mozz", "dairy", "ld", "🧀", "Mozzarella, part-skim shredded", "1/4 cup", 72, 7, 0.8, 4.5, 0, 0, [0.25, "cup"]),
     F("feta", "dairy", "bld", "🧀", "Feta cheese", "1 oz", 75, 4, 1.2, 6, 0, 0, [1, "oz"]),
     F("almondmilk", "dairy", "bs", "🥛", "Almond milk, unsweetened", "1 cup", 35, 1, 1, 2.5, 0.5, 0, [1, "cup"]),
+    F("teriyaki", "meat", "ld", "🍱", "Chicken teriyaki plate, takeout (estimate)", "1 plate with rice", 620, 40, 70, 15, 2, 15, [1, "plate"]),
     F("chicken", "meat", "ld", "🍗", "Chicken breast, cooked", "4 oz", 187, 35, 0, 4, 0, 0, [4, "oz"]),
     F("turkey99", "meat", "ld", "🦃", "Ground turkey 99% lean", "4 oz raw", 120, 26, 0, 1.5, 0, 0, [4, "oz"]),
     F("turkey93", "meat", "ld", "🦃", "Ground turkey 93% lean", "4 oz raw", 170, 21, 0, 9, 0, 0, [4, "oz"], { swap: "turkey99" }),
@@ -773,7 +791,7 @@ h3 { font-weight: 600; }
 
   // Power foods: weekly targets drawn from US healthy eating patterns (2,000 kcal).
   const POWER = [
-    { id: "yogurt", e: "🥣", n: "Greek yogurt & cottage cheese", foods: ["gy0", "gy2", "gyv", "skyr", "cott"], mode: "days", goal: 5, unit: "days" },
+    { id: "yogurt", e: "🥣", n: "Greek yogurt & cottage cheese", foods: ["gy0", "gy2", "gyv", "skyr", "cott", "oikospro", "oikos0"], mode: "days", goal: 5, unit: "days" },
     { id: "fish", e: "🐟", n: "Fish & seafood", foods: ["salmon", "shrimp", "cod", "tuna", "smsalmon"], mode: "servings", goal: 2, unit: "servings", note: "about 8 oz a week" },
     { id: "veg", e: "🥦", n: "Vegetables", foods: ["spinach", "greens", "broccoli", "greenbeans", "pepper", "caulirice", "marinara"], mode: "servings", goal: 14, unit: "servings" },
     { id: "beans", e: "🫘", n: "Beans, lentils & edamame", foods: ["beans", "lentils", "edamame"], mode: "servings", goal: 3, unit: "servings", note: "about 1.5 cups a week" },
@@ -799,22 +817,26 @@ h3 { font-weight: 600; }
     { id: "b4", meal: "breakfast", n: "Egg White Veggie Scramble", items: { ew: 2, egg: 1, spinach: 1, pepper: 1, feta: 0.5, toast: 1 }, why: "Whites plus one whole egg keeps the flavor at lower calories.", steps: ["Sauté pepper and spinach 2 min.", "Add whisked whites and egg; stir until set.", "Top with feta; serve with toast."] },
     { id: "b5", meal: "breakfast", n: "Overnight Protein Oats", items: { oats: 1, gy0: 1, whey: 0.5, almondmilk: 0.5, rasp: 1, chia: 1 }, why: "Make it the night before. Highest fiber of the breakfasts.", steps: ["Mix oats, yogurt, whey, almond milk and chia in a jar.", "Refrigerate overnight; top with berries."] },
     { id: "b6", meal: "breakfast", n: "Smoked Salmon Toast", items: { toast: 1, smsalmon: 1.5, gy0: 0.5, egg: 2 }, why: "Greek yogurt in place of cream cheese.", steps: ["Toast bread and spread with yogurt.", "Layer salmon; serve with 2 boiled or scrambled eggs."] },
+    { id: "b7", meal: "breakfast", n: "Oikos Pro Berry Bowl", items: { oikospro: 2, rasp: 1, hemp: 1 }, why: "Two cups of Oikos Pro is 40 g protein with no added sugar.", steps: ["Empty two cups into a bowl.", "Top with raspberries and hemp hearts."] },
     { id: "bw", meal: "breakfast", n: "Café Yogurt Parfait", watch: true, items: { gyv: 1, granola: 1, honey: 2, blue: 0.5 }, why: "About the same calories as the bowls above, with a third of the protein and ~28 g added sugar.", steps: ["Shown for comparison. Swap to plain yogurt and seeds."] },
     { id: "l1", meal: "lunch", n: "Greek Chicken Bowl", items: { chicken: 1.5, quinoa: 1, greens: 1, pepper: 1, feta: 0.5, gy0: 0.5 }, why: "Greek yogurt with lemon and garlic makes a quick tzatziki.", steps: ["Slice chicken over greens and quinoa.", "Add pepper and feta.", "Mix yogurt with lemon, garlic and dill for the sauce."] },
     { id: "l2", meal: "lunch", n: "Tuna Salad Sandwich", items: { tuna: 1.5, gy0: 0.5, toast: 2, greens: 0.5, pepper: 1 }, why: "Greek yogurt instead of mayo saves about 150 kcal.", steps: ["Mix tuna with yogurt, mustard, salt and pepper.", "Serve on bread with greens and sliced pepper."] },
     { id: "l3", meal: "lunch", n: "Turkey Taco Bowl", items: { turkey99: 2, beans: 1, rice: 1, salsa: 1, greens: 1, gy0: 0.5 }, why: "Greek yogurt replaces sour cream.", steps: ["Brown turkey with taco seasoning.", "Layer rice, beans, greens and turkey.", "Top with salsa and a spoon of yogurt."] },
     { id: "l4", meal: "lunch", n: "Shrimp & Edamame Salad", items: { shrimp: 1.5, edamame: 1, greens: 1, pepper: 1, quinoa: 1, oil: 1 }, why: "Fast if you buy cooked shrimp and shelled edamame.", steps: ["Toss greens, quinoa, edamame and pepper.", "Top with shrimp; dress with olive oil and lemon."] },
+    { id: "l6", meal: "lunch", n: "Chicken Teriyaki Plate", items: { teriyaki: 1 }, why: "Takeout estimate; restaurants vary a lot. Sauce adds sugar and sodium, so ask for it on the side.", steps: ["Order with sauce on the side; extra veggies if offered."] },
     { id: "l5", meal: "lunch", n: "Tofu & Edamame Rice Bowl", items: { tofu: 2, edamame: 1.5, rice: 1, broccoli: 1 }, why: "Plant-based option. Less protein per calorie than meat.", steps: ["Press and cube tofu; pan-fry until golden.", "Serve over rice with broccoli and edamame; add soy sauce."] },
     { id: "d1", meal: "dinner", n: "Sirloin, Sweet Potato & Green Beans", items: { sirloin: 1.5, sweetpot: 1, greenbeans: 1, oil: 1, gy0: 0.5 }, why: "Lean steak cut; yogurt with herbs works as a sauce.", steps: ["Season and sear steak 4-5 min per side; rest 5 min.", "Bake sweet potato (or microwave 6-8 min).", "Sauté green beans in olive oil."] },
     { id: "d2", meal: "dinner", n: "Lemon Salmon & Broccoli", items: { salmon: 1.5, broccoli: 1, quinoa: 1, gy0: 0.5 }, why: "Adds omega-3 fats. Salmon has more calories than white fish.", steps: ["Bake salmon at 400°F for 12-15 min with lemon.", "Steam broccoli; serve with quinoa.", "Mix yogurt with dill and lemon for sauce."] },
     { id: "d3", meal: "dinner", n: "Shrimp Stir-Fry", items: { shrimp: 2, pepper: 2, broccoli: 1, rice: 1, oil: 1 }, why: "Most protein per calorie of the dinners.", steps: ["Stir-fry pepper and broccoli in oil 3 min.", "Add shrimp and cook 2-3 min until pink.", "Season with soy sauce, garlic and ginger; serve over rice."] },
     { id: "d4", meal: "dinner", n: "Turkey Meat Sauce Pasta", items: { turkey99: 2, marinara: 1, pasta: 2, mozz: 1, greens: 1 }, why: "99% lean turkey keeps the sauce lean.", steps: ["Brown turkey; add marinara and simmer 10 min.", "Toss with cooked pasta; top with mozzarella.", "Serve with a side salad."] },
     { id: "d5", meal: "dinner", n: "Sheet-Pan Chicken & Veggies", items: { chicken: 1.5, sweetpot: 1, broccoli: 1, oil: 1 }, why: "One pan. Cook extra chicken for tomorrow's lunch.", steps: ["Cube sweet potato; toss with oil and roast at 425°F for 10 min.", "Add chicken and broccoli; roast 20 min until chicken reaches 165°F."] },
+    { id: "d7", meal: "dinner", n: "Chicken Teriyaki Plate", items: { teriyaki: 1 }, why: "Takeout estimate; restaurants vary a lot. Sauce adds sugar and sodium, so ask for it on the side.", steps: ["Order with sauce on the side; extra veggies if offered."] },
     { id: "d6", meal: "dinner", n: "Cod Tacos", items: { cod: 1.5, tortilla: 2, salsa: 1, gy0: 0.5, greens: 0.5 }, why: "White fish is very lean, so tortillas fit.", steps: ["Season cod and bake at 400°F for 10-12 min.", "Flake into warm tortillas.", "Top with greens, salsa and yogurt."] },
     { id: "s1", meal: "snacks", n: "Shake & Berries", items: { shake: 1, straw: 1 }, why: "Easiest 30 g protein of the day.", steps: ["Grab and go."] },
     { id: "s2", meal: "snacks", n: "Cottage Cheese Cup", items: { cott: 2, blue: 1, cinn: 1 }, why: "Slow-digesting protein; good in the evening.", steps: ["Top cottage cheese with blueberries and cinnamon."] },
     { id: "s3", meal: "snacks", n: "Jerky & String Cheese", items: { jerky: 1, string: 1, apple: 1 }, why: "No prep, fits in a bag.", steps: ["Pack together."] },
     { id: "s4", meal: "snacks", n: "Turkey Roll-Ups & Hummus", items: { deli: 1, hummus: 1, pepper: 1 }, why: "Savory option. Deli meat is salty, so rotate it.", steps: ["Roll turkey slices; dip with peppers in hummus."] },
+    { id: "s6", meal: "snacks", n: "Oikos Pro Cup", items: { oikospro: 1 }, why: "20 g protein in one cup, no prep.", steps: ["Grab a cup."] },
     { id: "s5", meal: "snacks", n: "Edamame & Greek Yogurt Dip", items: { edamame: 1, gy0: 1, pepper: 1 }, why: "Counts toward beans and veggies at the same time.", steps: ["Season yogurt with garlic, lemon and dill.", "Dip peppers; eat edamame on the side."] }
   ];
   const IDEA_BY_ID = Object.fromEntries(IDEAS.map(i => [i.id, i]));
@@ -1064,6 +1086,25 @@ h3 { font-weight: 600; }
 
   // ---------- My day ----------
   const todayLog = () => state.log[today()] || {};
+  function guessMeal() { const h = new Date().getHours() + new Date().getMinutes() / 60; return h < 10.5 ? "breakfast" : h < 15 ? "lunch" : h < 17 ? "snacks" : "dinner"; }
+  function renderQuickLog() {
+    $("ql-food").innerHTML = GROUPS.map(([g, n]) => `<optgroup label="${n}">${FOODS.filter(f => f.g === g).map(f => `<option value="${f.id}">${f.e} ${esc(f.n)}</option>`).join("")}</optgroup>`).join("");
+    $("ql-meal").innerHTML = MEALS.map(m => `<option value="${m.id}">${m.name}</option>`).join("");
+    qlInfo();
+  }
+  function qlInfo() {
+    const f = BY_ID[$("ql-food").value], q = parseFloat($("ql-qty").value) || 1;
+    if (f) $("ql-info").textContent = `1 serving = ${f.sv}. ${qtyLabel(q)} = ${r0(f.p * q)} g protein, ${r0(f.k * q)} kcal.`;
+  }
+  function quickLog(id, meal, q) {
+    const d = today(), key = d + ":" + meal;
+    state.log[d] = state.log[d] || {};
+    const cur = state.log[d][meal] ? Object.assign({}, state.log[d][meal]) : {};
+    cur[id] = Math.min(8, (cur[id] || 0) + q);
+    state.log[d][meal] = cur;
+    if (state.pantry[id]) { addStock(id, -q); state.deducted[key] = 1; }
+    persist(); renderMealParts(); renderWeek();
+  }
   function takeFromFridge(items, sign) {
     if (!fridgeOn()) return false;
     let any = false;
@@ -1103,19 +1144,20 @@ h3 { font-weight: 600; }
       ${met && anyEaten ? `<text x="120" y="78" text-anchor="middle" font-size="26" style="font-family:var(--emoji)">🎉</text>` : ""}<text x="120" y="118" text-anchor="middle" font-size="48" font-weight="600" fill="var(--ink)">${r0(shown)}</text>
       <text x="120" y="142" text-anchor="middle" font-size="14" fill="var(--muted)">of ${goal} g ${anyEaten ? "eaten" : "planned"}</text>
       <text x="120" y="164" text-anchor="middle" font-size="13" font-weight="600" fill="${met ? "var(--good)" : "var(--muted)"}">${sub}</text>`;
-    const pctP = tot.k ? r0(tot.p * 4 / tot.k * 100) : 0;
+    const pt = anyEaten ? ate : tot, pctP = pt.k ? r0(pt.p * 4 / pt.k * 100) : 0;
     $("daystats").innerHTML = `<div class="pills">
       <span class="pill-stat"><b>${r0((anyEaten ? ate : tot).k)}</b> / ${s.cal} kcal${anyEaten ? " eaten" : ""}</span>
       <span class="pill-stat"><b>${r0((anyEaten ? ate : tot).fb)} g</b> fiber</span>
       <span class="pill-stat"><b>${pctP}%</b> from protein</span></div>`;
     document.querySelector(".day-ring").classList.toggle("met", met && anyEaten);
     $("meals").innerHTML = MEALS.map(m => {
-      const items = state.meals[m.id] || {}, t = totals(items), tg = mealTargets(m.id), ids = byProtein(items);
+      const ateIt = eatenMeals[m.id], items = ateIt || state.meals[m.id] || {}, t = totals(items), tg = mealTargets(m.id), ids = byProtein(items);
+      const sameAsPlan = ateIt && JSON.stringify(cleanItems(ateIt)) === JSON.stringify(cleanItems(state.meals[m.id]));
       const ok = t.p >= tg.p;
       return `<article class="meal" style="--mc:${mc(m.id)}">
         <div class="art">${plateSVG(items, m.id)}</div>
         <div class="meal-head"><span class="meal-name">${m.name}</span>${eatenMeals[m.id] ? `<span class="tag good">Eaten ✓</span>` : ok ? `<span class="tag">On target</span>` : ids.length ? `<span class="tag">${r0(tg.p - t.p)} g short</span>` : ""}</div>
-        <div class="meal-title">${ids.length ? esc(state.label[m.id] || "Custom") : "Nothing planned"}</div>
+        <div class="meal-title">${ateIt && !sameAsPlan ? "What you ate" : ids.length ? esc(state.label[m.id] || "Custom") : "Nothing planned"}</div>${ateIt && !sameAsPlan ? `<div class="meal-foods">${ids.map(id => esc(shortName(BY_ID[id].n)) + (ateIt[id] !== 1 ? " " + qtyLabel(ateIt[id]) : "")).join(" · ")}</div>` : ""}
         <div>${ids.length ? miniStickers(items) : `<div class="meal-foods">Pick one below.</div>`}</div>
         <div class="meal-bar">
           <div class="row"><span><span class="p">${r0(t.p)}</span> <span class="muted">/ ${tg.p} g protein</span></span><span class="num muted">${r0(t.k)} kcal</span></div>
@@ -1735,6 +1777,17 @@ h3 { font-weight: 600; }
   }, true);
 
   $("open-composer").addEventListener("click", () => openComposer(ui.meal));
+  $("ql-open").addEventListener("click", () => { $("quicklog").hidden = false; $("ql-open").hidden = true; $("ql-meal").value = guessMeal(); qlInfo(); $("ql-food").focus(); });
+  $("ql-cancel").addEventListener("click", () => { $("quicklog").hidden = true; $("ql-open").hidden = false; });
+  $("ql-food").addEventListener("change", qlInfo); $("ql-qty").addEventListener("input", qlInfo);
+  $("quicklog").addEventListener("submit", e => {
+    e.preventDefault();
+    const id = $("ql-food").value, meal = $("ql-meal").value, q = parseFloat($("ql-qty").value);
+    if (!BY_ID[id] || !MEAL_BY_ID[meal] || !(q > 0)) return;
+    quickLog(id, meal, Math.round(q * 2) / 2);
+    $("quicklog").hidden = true; $("ql-open").hidden = false;
+    flash("ql-toast", `Logged ${shortName(BY_ID[id].n)} to ${MEAL_BY_ID[meal].name.toLowerCase()}`);
+  });
   $("open-fridge").addEventListener("click", () => openFridge(true));
   $("close-fridge").addEventListener("click", () => openFridge(false));
   $("scrim").addEventListener("click", () => openFridge(false));
@@ -1822,7 +1875,7 @@ h3 { font-weight: 600; }
     catch (err) { fallback(); }
   });
 
-  renderGroupSelect(); renderFridgeAdd(); renderAll(); setView("plan"); renderBoard();
+  renderGroupSelect(); renderFridgeAdd(); renderQuickLog(); renderAll(); setView("plan"); renderBoard();
   initAccount();
 })();
 </script>
