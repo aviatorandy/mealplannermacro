@@ -366,6 +366,8 @@ h3 { font-weight: 600; }
 .meal-actions .btn { background: transparent; border-color: color-mix(in srgb, var(--mc) 35%, var(--line)); color: var(--ink); }
 .meal-actions .btn:hover { background: color-mix(in srgb, var(--mc) 12%, var(--surface)); border-color: var(--mc); }
 .tag { border-radius: 999px; letter-spacing: .04em; }
+.meal-actions .btn.ate { margin-left: auto; background: var(--mc); border-color: var(--mc); color: #fff; }
+.meal-actions .btn.ate[aria-pressed="true"] { background: var(--good-bg); border-color: var(--good); color: var(--good); }
 .greet { font-family: var(--font-display); font-weight: 500; font-size: 17px; color: var(--muted); }
 .greet b { color: var(--ink); font-weight: 600; }
 .day-ring { border-radius: 30px; background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--accent) 9%, var(--surface)) 0%, var(--surface) 70%); }
@@ -1061,32 +1063,58 @@ h3 { font-weight: 600; }
   }
 
   // ---------- My day ----------
+  const todayLog = () => state.log[today()] || {};
+  function takeFromFridge(items, sign) {
+    if (!fridgeOn()) return false;
+    let any = false;
+    liveIds(items).forEach(id => { if (state.pantry[id]) { addStock(id, sign * items[id]); any = true; } });
+    return any;
+  }
+  function toggleEaten(meal) {
+    const d = today(), key = d + ":" + meal;
+    state.log[d] = state.log[d] || {};
+    if (state.log[d][meal]) {
+      if (state.deducted[key]) { takeFromFridge(state.log[d][meal], 1); delete state.deducted[key]; }
+      delete state.log[d][meal];
+      if (!Object.keys(state.log[d]).length) delete state.log[d];
+    } else {
+      state.log[d][meal] = clone(state.meals[meal]);
+      if (takeFromFridge(state.meals[meal], -1)) state.deducted[key] = 1;
+    }
+    persist(); renderMealParts(); renderWeek();
+  }
   function renderDay() {
     const s = state.settings, tot = dayTotals(state.meals), goal = s.protein;
+    const eatenMeals = todayLog(), anyEaten = Object.keys(eatenMeals).length > 0;
+    const ate = dayTotals(eatenMeals);
     const R = 96, C = 2 * Math.PI * R;
     let off = 0, arcs = "";
-    MEALS.forEach(m => {
-      const p = totals(state.meals[m.id]).p, len = Math.min(C - off, C * p / goal);
-      if (len > 0) arcs += `<circle cx="120" cy="120" r="${R}" fill="none" stroke="${mc(m.id)}" stroke-width="22" stroke-dasharray="${Math.max(0, len - (len > 6 ? 3 : 0))} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 120 120)"><title>${m.name}: ${r0(p)} g</title></circle>`;
+    // Eaten meals first (solid), then what's still planned (faded)
+    const segs = MEALS.filter(m => eatenMeals[m.id]).map(m => [m, totals(eatenMeals[m.id]).p, 1])
+      .concat(MEALS.filter(m => !eatenMeals[m.id]).map(m => [m, totals(state.meals[m.id]).p, anyEaten ? 0.3 : 1]));
+    segs.forEach(([m, p, op]) => {
+      const len = Math.min(C - off, C * p / goal);
+      if (len > 0) arcs += `<circle cx="120" cy="120" r="${R}" fill="none" stroke="${mc(m.id)}" stroke-opacity="${op}" stroke-width="22" stroke-dasharray="${Math.max(0, len - (len > 6 ? 3 : 0))} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 120 120)"><title>${m.name}: ${r0(p)} g${op < 1 ? " planned" : anyEaten ? " eaten" : ""}</title></circle>`;
       off += len;
     });
-    const met = tot.p >= goal;
+    const shown = anyEaten ? ate.p : tot.p, met = shown >= goal;
+    const sub = anyEaten ? (met ? "goal met!" : `${r0(goal - ate.p)} g to go`) : (tot.p >= goal ? "planned to hit it ✓" : r0(goal - tot.p) + " g short in plan");
     $("dayring").innerHTML = `<circle cx="120" cy="120" r="${R}" fill="none" stroke="var(--sunk)" stroke-width="22"></circle>${arcs}
-      ${met ? `<text x="120" y="78" text-anchor="middle" font-size="26" style="font-family:var(--emoji)">🎉</text>` : ""}<text x="120" y="118" text-anchor="middle" font-size="48" font-weight="600" fill="var(--ink)">${r0(tot.p)}</text>
-      <text x="120" y="142" text-anchor="middle" font-size="14" fill="var(--muted)">of ${goal} g protein</text>
-      <text x="120" y="164" text-anchor="middle" font-size="14" font-weight="600" fill="${met ? "var(--good)" : "var(--muted)"}">${met ? "goal met!" : r0(goal - tot.p) + " g to go"}</text>`;
+      ${met && anyEaten ? `<text x="120" y="78" text-anchor="middle" font-size="26" style="font-family:var(--emoji)">🎉</text>` : ""}<text x="120" y="118" text-anchor="middle" font-size="48" font-weight="600" fill="var(--ink)">${r0(shown)}</text>
+      <text x="120" y="142" text-anchor="middle" font-size="14" fill="var(--muted)">of ${goal} g ${anyEaten ? "eaten" : "planned"}</text>
+      <text x="120" y="164" text-anchor="middle" font-size="13" font-weight="600" fill="${met ? "var(--good)" : "var(--muted)"}">${sub}</text>`;
     const pctP = tot.k ? r0(tot.p * 4 / tot.k * 100) : 0;
     $("daystats").innerHTML = `<div class="pills">
-      <span class="pill-stat"><b>${r0(tot.k)}</b> / ${s.cal} kcal</span>
-      <span class="pill-stat"><b>${r0(tot.fb)} g</b> fiber</span>
+      <span class="pill-stat"><b>${r0((anyEaten ? ate : tot).k)}</b> / ${s.cal} kcal${anyEaten ? " eaten" : ""}</span>
+      <span class="pill-stat"><b>${r0((anyEaten ? ate : tot).fb)} g</b> fiber</span>
       <span class="pill-stat"><b>${pctP}%</b> from protein</span></div>`;
-    document.querySelector(".day-ring").classList.toggle("met", met);
+    document.querySelector(".day-ring").classList.toggle("met", met && anyEaten);
     $("meals").innerHTML = MEALS.map(m => {
       const items = state.meals[m.id] || {}, t = totals(items), tg = mealTargets(m.id), ids = byProtein(items);
       const ok = t.p >= tg.p;
       return `<article class="meal" style="--mc:${mc(m.id)}">
         <div class="art">${plateSVG(items, m.id)}</div>
-        <div class="meal-head"><span class="meal-name">${m.name}</span>${ok ? `<span class="tag good">On target</span>` : ids.length ? `<span class="tag">${r0(tg.p - t.p)} g short</span>` : ""}</div>
+        <div class="meal-head"><span class="meal-name">${m.name}</span>${eatenMeals[m.id] ? `<span class="tag good">Eaten ✓</span>` : ok ? `<span class="tag">On target</span>` : ids.length ? `<span class="tag">${r0(tg.p - t.p)} g short</span>` : ""}</div>
         <div class="meal-title">${ids.length ? esc(state.label[m.id] || "Custom") : "Nothing planned"}</div>
         <div>${ids.length ? miniStickers(items) : `<div class="meal-foods">Pick one below.</div>`}</div>
         <div class="meal-bar">
@@ -1097,6 +1125,7 @@ h3 { font-weight: 600; }
           <button class="btn small" type="button" data-next="${m.id}">↻ Swap</button>
           <button class="btn small" type="button" data-edit="${m.id}">Edit</button>
           ${ids.length ? `<button class="btn small" type="button" data-share="${m.id}">Share</button>` : ""}
+          ${ids.length || eatenMeals[m.id] ? `<button class="btn small ate" type="button" data-ate="${m.id}" aria-pressed="${!!eatenMeals[m.id]}">${eatenMeals[m.id] ? "✓ Ate it" : "Mark eaten"}</button>` : ""}
         </div>
       </article>`;
     }).join("");
@@ -1118,7 +1147,8 @@ h3 { font-weight: 600; }
     $("stickers").innerHTML = POWER.map(pw => {
       let done = 0;
       days.forEach(d => { if (state.log[d]) done += powerCount(pw, state.log[d]); });
-      const planned = state.log[td] ? 0 : powerCount(pw, state.meals);
+      const left = {}; MEALS.forEach(m => { if (!(state.log[td] || {})[m.id]) left[m.id] = state.meals[m.id]; });
+      const planned = powerCount(pw, left);
       const goal = pw.goal, R = 36, C = 2 * Math.PI * R;
       const a = Math.min(1, done / goal), b = Math.min(1 - a, planned / goal);
       const complete = done >= goal;
@@ -1656,6 +1686,7 @@ h3 { font-weight: 600; }
     }
     else if (d.use) useIdea(IDEA_BY_ID[d.use]);
     else if (d.share) openComposer(d.share);
+    else if (d.ate) toggleEaten(d.ate);
     else if (d.ftab) { ui.fridgeTab = d.ftab; renderFridge(); }
     else if (d.finc) { addStock(d.finc, 1); persist(); renderMealParts(); }
     else if (d.fdec) { addStock(d.fdec, -1); persist(); renderMealParts(); }
@@ -1743,8 +1774,9 @@ h3 { font-weight: 600; }
     state.log[d] = clone(state.meals);
     let note = "";
     if ($("use-fridge").checked && fridgeOn()) {
-      if (state.deducted[d]) note = " (fridge already updated for this day)";
-      else { const u = dailyUse(state.meals); Object.keys(u).forEach(id => { if (state.pantry[id]) addStock(id, -u[id]); }); state.deducted[d] = 1; note = " and updated your fridge"; }
+      let changed = false;
+      MEALS.forEach(m => { const key = d + ":" + m.id; if (!state.deducted[key] && !state.deducted[d]) { if (takeFromFridge(state.meals[m.id], -1)) { state.deducted[key] = 1; changed = true; } } });
+      note = changed ? " and updated your fridge" : " (fridge already up to date)";
     }
     persist(); renderWeek(); renderStickers(); renderFridge();
     flash("toast", `Saved for ${new Date(d + "T12:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}${note}`);
