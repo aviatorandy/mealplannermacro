@@ -3,375 +3,466 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Protein Breakfast Planner</title>
+<title>Protein Meal Planner</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Layout: builder (food shelf) on the left, a sticky "your bowl" scale on the right; recipes, week log and evidence stack below. */
+/* Layout: the whole day as four big meal cards around a protein ring up top; meal ideas next; the customizer (food tiles + plate) at the bottom. Cook view swaps the page for a recipe and grocery sheet. */
 :root {
-  --bg: #F3F6F4;
+  --bg: #F2F5F3;
   --surface: #FFFFFF;
-  --sunk: #E9EEEB;
-  --ink: #16201B;
-  --muted: #5B6862;
-  --line: #D6DFDA;
-  --accent: #2E47C2;      /* blueberry: also the protein color, since protein is the point */
+  --sunk: #E8EDEA;
+  --ink: #15201A;
+  --muted: #5A6761;
+  --line: #D5DED9;
+  --accent: #2E47C2;
   --protein: #2E47C2;
   --carb: #B97C0C;
   --fat: #6F8126;
   --fiber: #23804F;
   --good: #1D7547;
   --warn: #AE4E14;
-  --good-bg: #E0F1E7;
-  --warn-bg: #FBE9DC;
+  --good-bg: #DFF0E6;
+  --warn-bg: #FBE8DA;
+  --m-breakfast: #D18F12;
+  --m-lunch: #24946B;
+  --m-dinner: #7A4CC2;
+  --m-snacks: #C24576;
   --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
   --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --font-num: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --r: 10px;
+  --r: 12px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0F1412; --surface: #171F1B; --sunk: #1F2924; --ink: #E5ECE8; --muted: #98A69F; --line: #2B3631;
+    --bg: #0E1311; --surface: #161E1A; --sunk: #1F2823; --ink: #E4ECE7; --muted: #97A59E; --line: #2A3530;
     --accent: #93A4FF; --protein: #93A4FF; --carb: #E6B04C; --fat: #B4C56A; --fiber: #62C391;
-    --good: #66C795; --warn: #F2985F; --good-bg: #173226; --warn-bg: #3A2416;
+    --good: #66C795; --warn: #F2985F; --good-bg: #163126; --warn-bg: #3A2416;
+    --m-breakfast: #EDB24A; --m-lunch: #4FC497; --m-dinner: #B091F0; --m-snacks: #EE7FA9;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0F1412; --surface: #171F1B; --sunk: #1F2924; --ink: #E5ECE8; --muted: #98A69F; --line: #2B3631;
+  --bg: #0E1311; --surface: #161E1A; --sunk: #1F2823; --ink: #E4ECE7; --muted: #97A59E; --line: #2A3530;
   --accent: #93A4FF; --protein: #93A4FF; --carb: #E6B04C; --fat: #B4C56A; --fiber: #62C391;
-  --good: #66C795; --warn: #F2985F; --good-bg: #173226; --warn-bg: #3A2416;
+  --good: #66C795; --warn: #F2985F; --good-bg: #163126; --warn-bg: #3A2416;
+  --m-breakfast: #EDB24A; --m-lunch: #4FC497; --m-dinner: #B091F0; --m-snacks: #EE7FA9;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-body {
-  margin: 0; background: var(--bg); color: var(--ink);
-  font: 15px/1.5 var(--font-body);
-}
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); }
 .wrap {
-  max-width: 1180px; margin: 0 auto;
+  max-width: 1200px; margin: 0 auto;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 28px 64px;
-  display: grid; gap: 40px;
+  padding-block: 24px 64px;
+  display: grid; gap: 44px;
 }
 h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
-h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 800; letter-spacing: -0.02em; }
+h1 { font-size: clamp(28px, 5vw, 42px); font-weight: 800; letter-spacing: -0.02em; }
 h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.01em; }
-h3 { font-size: 17px; font-weight: 600; }
+h3 { font-size: 18px; font-weight: 600; }
 p { margin: 0; }
 .muted { color: var(--muted); }
 .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
-button, input, select { font: inherit; color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
+button:disabled { cursor: default; opacity: .7; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-/* Header */
-header { display: grid; gap: 14px; }
-.lede { max-width: 62ch; color: var(--muted); font-size: 16px; }
-
-/* Targets strip */
-.targets { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
-.target { background: var(--surface); padding: 14px 16px; display: grid; gap: 2px; box-shadow: 0 0 0 1px var(--line); }
-.target .big { font-family: var(--font-num); font-size: 24px; }
-.target .big small { font-size: 13px; color: var(--muted); }
-details.settings { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
-details.settings summary { padding: 12px 16px; cursor: pointer; font-weight: 700; }
-.settings-body { padding: 4px 16px 18px; display: grid; gap: 18px; }
-.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
-.field { display: grid; gap: 4px; }
-.field label { font-size: 13px; font-weight: 700; }
-.field input, .field select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); min-width: 0; width: 100%; }
-.field .hint { font-size: 12px; color: var(--muted); }
-.estimator { border-top: 1px dashed var(--line); padding-top: 14px; display: grid; gap: 12px; }
+.section-head { display: grid; gap: 6px; margin-bottom: 16px; }
 .btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 14px; font-weight: 700; }
-.btn:hover { border-color: var(--accent); }
-.btn.primary { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .btn.small { padding: 4px 10px; font-size: 13px; }
-
-/* Builder */
-.builder { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: start; }
-.shelf { display: grid; gap: 14px; min-width: 0; }
-.shelf-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; justify-content: space-between; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 13px; }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.tools { display: flex; gap: 8px; flex-wrap: wrap; }
-.tools input, .tools select { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); min-width: 0; }
-.foods { display: grid; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); overflow: hidden; }
-.food { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); }
-.food:first-child { border-top: 0; }
-.food.in { background: var(--sunk); }
-.swatch { width: 10px; height: 34px; border-radius: 3px; }
-.food-name { font-weight: 700; }
-.food-meta { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
-.density { font-family: var(--font-num); font-size: 12px; padding: 1px 7px; border-radius: 999px; white-space: nowrap; }
-.density.hi { background: var(--good-bg); color: var(--good); }
-.density.mid { background: var(--sunk); color: var(--ink); }
-.density.lo { background: var(--sunk); color: var(--muted); }
-.flag { font-size: 12px; color: var(--warn); font-weight: 700; }
-.food-macros { text-align: right; font-size: 13px; white-space: nowrap; }
-.food-macros b { color: var(--protein); font-family: var(--font-num); font-weight: 500; }
-.stepper { display: flex; align-items: center; gap: 4px; }
-.stepper button { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; line-height: 1; }
-.stepper button:hover { border-color: var(--accent); color: var(--accent); }
-.stepper .q { min-width: 28px; text-align: center; font-family: var(--font-num); font-size: 13px; }
+.tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--sunk); color: var(--muted); white-space: nowrap; }
+.tag.good { background: var(--good-bg); color: var(--good); }
+.tag.warn { background: var(--warn-bg); color: var(--warn); }
 
-/* Bowl panel */
-.bowl { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 16px; }
-.bowl-top { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 16px; align-items: center; }
-.ring text { font-family: var(--font-num); }
+/* Header */
+.top { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: end; justify-content: space-between; }
+.top-left { display: grid; gap: 8px; min-width: 0; }
+.top-right { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--surface); }
+.seg button { border: 0; background: none; border-radius: 999px; padding: 6px 16px; font-weight: 700; font-size: 14px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.sync { font-size: 12px; display: inline-flex; gap: 6px; align-items: center; color: var(--muted); }
+.sync i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.sync.live i { background: var(--good); }
+
+/* Day at a glance */
+.day { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; align-items: stretch; }
+.day-ring { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; display: grid; gap: 14px; align-content: start; justify-items: center; text-align: center; }
+.day-ring svg { width: 100%; max-width: 230px; height: auto; }
+.day-ring svg text { font-family: var(--font-num); }
+.day-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.stat { background: var(--sunk); border-radius: 8px; padding: 8px 10px; text-align: left; }
+.stat b { font-family: var(--font-num); font-weight: 500; font-size: 18px; display: block; }
+.stat span { font-size: 12px; color: var(--muted); }
+.meals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.meal { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 16px 16px; display: grid; gap: 12px; grid-template-rows: auto auto 1fr auto auto; position: relative; overflow: hidden; }
+.meal::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 5px; background: var(--mc); }
+.meal-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.meal-name { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--mc); }
+.meal-title { font-family: var(--font-display); font-weight: 800; font-size: 20px; line-height: 1.2; }
+.icons { display: flex; flex-wrap: wrap; gap: 6px; align-content: start; }
+.ico { display: inline-flex; align-items: center; gap: 6px; background: var(--sunk); border-radius: 999px; padding: 3px 10px 3px 4px; font-size: 13px; }
+.ico .e { width: 26px; height: 26px; display: grid; place-items: center; background: var(--surface); border-radius: 50%; font-size: 15px; }
+.meal-bar { display: grid; gap: 4px; }
+.meal-bar .row { display: flex; justify-content: space-between; font-size: 13px; gap: 8px; }
+.meal-bar .p { font-family: var(--font-num); font-size: 22px; color: var(--ink); }
+.track { height: 8px; border-radius: 4px; background: var(--sunk); overflow: hidden; }
+.fill { height: 100%; border-radius: 4px; transition: width .35s ease; }
+.meal-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.empty { font-size: 13px; color: var(--muted); padding: 12px; background: var(--sunk); border-radius: 8px; }
+
+/* Ideas */
+.ideas { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+.idea { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 10px; grid-template-rows: auto auto auto 1fr auto auto auto; }
+.idea.watch { border-style: dashed; border-color: var(--warn); }
+.idea .why { font-size: 13px; color: var(--muted); }
+.splitbar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--sunk); }
+.splitbar span { display: block; height: 100%; }
+.idea-stats { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; flex-wrap: wrap; }
+.idea-stats .p { font-family: var(--font-num); font-size: 20px; color: var(--protein); }
+
+/* Customizer */
+.custom { display: grid; grid-template-columns: minmax(0, 1fr) 370px; gap: 24px; align-items: start; }
+.shelf { display: grid; gap: 14px; min-width: 0; }
+.mealtabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.mealtab { border: 2px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 14px; font-weight: 700; display: grid; text-align: left; gap: 2px; min-width: 120px; }
+.mealtab small { font-weight: 400; font-size: 12px; color: var(--muted); font-family: var(--font-num); }
+.mealtab[aria-pressed="true"] { border-color: var(--mc); box-shadow: inset 0 -4px 0 var(--mc); }
+.tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.tools input[type=search], .tools select { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); min-width: 0; }
+.tools label { font-size: 13px; display: inline-flex; gap: 6px; align-items: center; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 10px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 6px; grid-template-rows: auto auto 1fr auto auto; }
+.tile.in { border-color: var(--mc); box-shadow: inset 0 0 0 1px var(--mc); }
+.tile-top { display: flex; justify-content: space-between; align-items: start; gap: 6px; }
+.tile .e { font-size: 28px; line-height: 1; }
+.tile .pp { font-family: var(--font-num); font-size: 20px; color: var(--protein); text-align: right; line-height: 1.1; }
+.tile .pp small { display: block; font-size: 11px; color: var(--muted); }
+.tile-name { font-weight: 700; font-size: 14px; line-height: 1.25; }
+.tile-sv { font-size: 12px; color: var(--muted); }
+.dens { display: grid; gap: 2px; font-size: 11px; color: var(--muted); }
+.dens .track { height: 5px; }
+.flag { font-size: 11px; color: var(--warn); font-weight: 700; }
+.stepper { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+.stepper button { width: 34px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; line-height: 1; }
+.stepper button:hover { border-color: var(--accent); color: var(--accent); }
+.stepper .q { text-align: center; font-family: var(--font-num); font-size: 13px; }
+
+.plate { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 14px; }
+.plate-top { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 14px; align-items: center; }
+.plate-top svg text { font-family: var(--font-num); }
 .meters { display: grid; gap: 9px; }
 .meter { display: grid; gap: 3px; }
 .meter-row { display: flex; justify-content: space-between; font-size: 13px; gap: 8px; }
 .meter-row .num { font-size: 12px; }
-.track { height: 7px; border-radius: 4px; background: var(--sunk); overflow: hidden; }
-.fill { height: 100%; border-radius: 4px; transition: width .3s ease; }
-.split { display: grid; gap: 6px; }
-.splitbar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--sunk); }
-.splitbar span { display: block; height: 100%; transition: width .3s ease; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); }
 .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
 .items { display: grid; gap: 6px; font-size: 13px; }
-.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
-.item .contrib { height: 4px; background: var(--protein); border-radius: 2px; margin-top: 3px; opacity: .75; }
-.empty { font-size: 13px; color: var(--muted); padding: 10px; background: var(--sunk); border-radius: 8px; }
+.item { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.item .contrib { height: 4px; border-radius: 2px; margin-top: 3px; background: var(--mc); }
 .tips { display: grid; gap: 8px; }
 .tip { font-size: 13px; padding: 10px 12px; border-radius: 8px; background: var(--sunk); display: grid; gap: 6px; }
 .tip.good { background: var(--good-bg); }
 .tip.warn { background: var(--warn-bg); }
-.tip b { font-weight: 700; }
 .tip-adds { display: flex; flex-wrap: wrap; gap: 6px; }
 .add { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 3px 10px; font-size: 12px; }
 .add:hover { border-color: var(--accent); color: var(--accent); }
-.rest { font-size: 13px; border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 8px; }
-.save-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.save-row input { padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.row-btns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .toast { font-size: 13px; color: var(--good); font-weight: 700; }
 
-/* Recipes */
-.section-head { display: grid; gap: 6px; margin-bottom: 16px; }
-.recipes { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
-.recipe { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 10px; grid-template-rows: auto auto 1fr auto auto; }
-.recipe.watch { border-style: dashed; border-color: var(--warn); }
-.recipe .tagline { display: flex; gap: 6px; flex-wrap: wrap; }
-.tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--sunk); color: var(--muted); }
-.tag.yog { background: var(--good-bg); color: var(--good); }
-.tag.warn { background: var(--warn-bg); color: var(--warn); }
-.recipe ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
-.recipe .why { font-size: 13px; }
-.recipe-stats { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; }
-.recipe-stats .p { font-family: var(--font-num); font-size: 20px; color: var(--protein); }
-
 /* Week */
-.week { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; align-items: start; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 12px; min-width: 0; }
 .chart-box { overflow-x: auto; }
-.chart-box svg { display: block; width: 100%; min-width: 320px; height: auto; }
+.chart-box svg { display: block; width: 100%; min-width: 340px; height: auto; }
 .chart-box text { font-family: var(--font-num); font-size: 11px; fill: var(--muted); }
-.variety { display: grid; gap: 8px; font-size: 14px; }
-.vrow { display: grid; grid-template-columns: 120px minmax(0, 1fr) 40px; gap: 10px; align-items: center; }
-.dots { display: flex; gap: 4px; }
-.dots i { width: 14px; height: 14px; border-radius: 4px; background: var(--sunk); }
-.dots i.on { background: var(--accent); }
+.save-row input[type=date] { padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+
+/* Settings */
+details.settings { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+details.settings summary { padding: 14px 16px; cursor: pointer; font-weight: 700; }
+.settings-body { padding: 4px 16px 18px; display: grid; gap: 18px; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+.field { display: grid; gap: 4px; align-content: start; }
+.field label { font-size: 13px; font-weight: 700; }
+.field input, .field select, .field textarea { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); min-width: 0; width: 100%; }
+.field .hint { font-size: 12px; color: var(--muted); }
+.sub { border-top: 1px dashed var(--line); padding-top: 14px; display: grid; gap: 12px; }
 
 /* Evidence */
-.evidence { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
-.fact { border-top: 3px solid var(--ink); padding-top: 12px; display: grid; gap: 6px; font-size: 14px; }
+.evidence { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+.fact { border-top: 3px solid var(--ink); padding-top: 12px; display: grid; gap: 6px; font-size: 14px; align-content: start; }
 .fact .claim { font-family: var(--font-display); font-weight: 600; font-size: 17px; line-height: 1.25; }
 .fact a { color: var(--accent); }
 .fineprint { font-size: 12px; color: var(--muted); max-width: 80ch; }
 
-@media (max-width: 900px) {
-  .builder, .week { grid-template-columns: minmax(0, 1fr); }
-  .bowl { position: static; }
+/* Cook view */
+.cook { display: grid; gap: 24px; }
+.cook-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.cook-meal { background: var(--surface); border: 1px solid var(--line); border-left: 6px solid var(--mc); border-radius: var(--r); padding: 16px 18px; display: grid; gap: 10px; }
+.cook-meal ul, .cook-meal ol { margin: 0; padding-left: 20px; display: grid; gap: 3px; }
+.cook-meal li { font-size: 14px; }
+.cook-meal .amt { font-family: var(--font-num); font-size: 13px; color: var(--muted); }
+.grocery { display: grid; gap: 14px; }
+.grocery h3 { font-size: 15px; }
+.grocery ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.grocery li { display: flex; gap: 8px; align-items: baseline; font-size: 14px; }
+.grocery li label { display: flex; gap: 8px; align-items: baseline; flex: 1; min-width: 0; }
+.grocery .amt { font-family: var(--font-num); font-size: 13px; color: var(--muted); margin-left: auto; white-space: nowrap; }
+textarea#notes { min-height: 90px; resize: vertical; }
+.share-box { font-size: 14px; display: grid; gap: 8px; }
+#copy-fallback { width: 100%; min-height: 160px; font-family: var(--font-num); font-size: 12px; }
+
+body.readonly .stepper button, body.readonly .edit-only { display: none !important; }
+
+@media (max-width: 960px) {
+  .day, .custom, .cook-grid { grid-template-columns: minmax(0, 1fr); }
+  .plate { position: static; }
+  .day-ring { grid-template-columns: 180px minmax(0, 1fr); justify-items: stretch; text-align: left; align-items: center; }
 }
-@media (max-width: 520px) {
-  .food { grid-template-columns: 8px minmax(0, 1fr) auto; }
-  .food-macros { display: none; }
-  .bowl-top { grid-template-columns: 104px minmax(0, 1fr); }
-  .vrow { grid-template-columns: 96px minmax(0, 1fr) 34px; }
+@media (max-width: 600px) {
+  .meals { grid-template-columns: minmax(0, 1fr); }
+  .day-ring { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .plate-top { grid-template-columns: 110px minmax(0, 1fr); }
+  .mealtab { min-width: 0; flex: 1 1 40%; }
 }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <header>
-    <span class="eyebrow">High-protein breakfast for weight loss</span>
-    <h1>Protein Breakfast Planner</h1>
-    <p class="lede">Build a breakfast from Greek yogurt and other high-protein foods, see how it stacks up against your targets, and get suggestions when you are short on protein or fiber. Your settings and saved days stay in this browser.</p>
+  <header class="top">
+    <div class="top-left">
+      <span class="eyebrow">High-protein meal plan for weight loss</span>
+      <h1>Protein Meal Planner</h1>
+    </div>
+    <div class="top-right">
+      <span class="sync" id="sync"><i></i><span>Saved on this device</span></span>
+      <div class="seg" role="group" aria-label="View">
+        <button type="button" data-view="plan" aria-pressed="true">My day</button>
+        <button type="button" data-view="cook" aria-pressed="false">Cook view</button>
+      </div>
+    </div>
   </header>
 
-  <!-- TARGETS -->
-  <section aria-labelledby="t-head" style="display:grid;gap:12px">
-    <h2 id="t-head" class="eyebrow" style="font-family:var(--font-body);font-size:12px">Your targets</h2>
-    <div class="targets" id="targets"></div>
-    <details class="settings" id="settings">
-      <summary>Adjust weight, protein and calories</summary>
-      <div class="settings-body">
-        <div class="fields">
-          <div class="field">
-            <label for="s-weight">Body weight (lb)</label>
-            <input id="s-weight" type="number" min="80" max="500" step="1">
-          </div>
-          <div class="field">
-            <label for="s-factor">Protein per kg body weight</label>
-            <select id="s-factor">
-              <option value="1.2">1.2 g/kg (lower end)</option>
-              <option value="1.4">1.4 g/kg (middle)</option>
-              <option value="1.6">1.6 g/kg (if lifting weights)</option>
+  <!-- ================= PLAN VIEW ================= -->
+  <div id="view-plan" style="display:grid;gap:44px">
+
+    <!-- DAY AT A GLANCE -->
+    <section class="day" aria-label="Today's plan">
+      <div class="day-ring">
+        <svg id="dayring" viewBox="0 0 240 240" role="img" aria-label="Daily protein"></svg>
+        <div class="day-stats" id="daystats"></div>
+      </div>
+      <div class="meals" id="meals"></div>
+    </section>
+
+    <!-- IDEAS -->
+    <section aria-labelledby="ideas-head">
+      <div class="section-head">
+        <h2 id="ideas-head">Meal ideas</h2>
+        <p class="muted">Tap "Use" to put one in your day. Protein and calories are for the amounts shown.</p>
+        <div class="chips" id="ideachips" role="group" aria-label="Meal filter"></div>
+      </div>
+      <div class="ideas" id="ideas"></div>
+    </section>
+
+    <!-- CUSTOMIZE -->
+    <section aria-labelledby="c-head" id="customize">
+      <div class="section-head">
+        <h2 id="c-head">Customize a meal</h2>
+        <p class="muted">Pick a meal, then tap + on any food. The bar under each food shows protein per 100 calories: longer means more protein for the calories.</p>
+      </div>
+      <div class="custom">
+        <div class="shelf">
+          <div class="mealtabs" id="mealtabs" role="group" aria-label="Meal to customize"></div>
+          <div class="tools">
+            <input id="search" type="search" placeholder="Search foods" aria-label="Search foods">
+            <select id="group" aria-label="Food group"></select>
+            <select id="sort" aria-label="Sort foods">
+              <option value="density">Most protein per calorie</option>
+              <option value="protein">Most protein</option>
+              <option value="kcal">Fewest calories</option>
+              <option value="name">A to Z</option>
             </select>
-            <span class="hint">Range studied for weight loss with muscle kept.</span>
+            <label><input type="checkbox" id="showall"> All foods, not just this meal</label>
           </div>
-          <div class="field">
-            <label for="s-cal">Daily calories</label>
-            <input id="s-cal" type="number" min="1000" max="4500" step="50">
-            <span class="hint">Use your own number, or estimate below.</span>
-          </div>
-          <div class="field">
-            <label for="s-share">Breakfast share of calories</label>
-            <select id="s-share">
-              <option value="0.2">20%</option>
-              <option value="0.25">25%</option>
-              <option value="0.3">30%</option>
-            </select>
-          </div>
+          <div class="tiles" id="tiles"></div>
+          <p class="fineprint">Values per serving from USDA FoodData Central or typical labels. Brands vary, so check labels on yogurt, jerky and shakes.</p>
         </div>
-        <div class="estimator">
-          <span class="eyebrow">Optional: estimate daily calories (Mifflin-St Jeor, minus 500 kcal)</span>
-          <div class="fields">
-            <div class="field"><label for="e-sex">Sex</label>
-              <select id="e-sex"><option value="f">Female</option><option value="m">Male</option></select></div>
-            <div class="field"><label for="e-age">Age</label><input id="e-age" type="number" min="18" max="90" value="35"></div>
-            <div class="field"><label for="e-height">Height (inches)</label><input id="e-height" type="number" min="48" max="90" value="66"></div>
-            <div class="field"><label for="e-act">Activity</label>
-              <select id="e-act">
-                <option value="1.2">Mostly sitting</option>
-                <option value="1.375" selected>Light exercise 1-3 days/week</option>
-                <option value="1.55">Moderate exercise 3-5 days/week</option>
-              </select></div>
+
+        <aside class="plate" id="plate" aria-labelledby="plate-head">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+            <h3 id="plate-head">Your plate</h3>
+            <button class="btn small edit-only" id="clear" type="button">Clear</button>
           </div>
-          <div class="save-row">
-            <button class="btn small" id="e-run" type="button">Estimate and use</button>
-            <span class="muted" id="e-out" style="font-size:13px"></span>
+          <div class="plate-top">
+            <svg id="platering" viewBox="0 0 130 130" role="img" aria-label="Meal protein"></svg>
+            <div class="meters" id="meters"></div>
           </div>
-        </div>
+          <div style="display:grid;gap:6px">
+            <span class="eyebrow">Calories from</span>
+            <div class="splitbar" id="splitbar" style="height:12px"></div>
+            <div class="legend" id="legend"></div>
+          </div>
+          <div class="items" id="items"></div>
+          <div class="tips" id="tips" aria-live="polite"></div>
+          <div class="row-btns edit-only">
+            <button class="btn small" id="setdefault" type="button">Save as my default</button>
+            <button class="btn small" id="usedefault" type="button">Reset to default</button>
+            <span class="toast" id="ptoast"></span>
+          </div>
+        </aside>
       </div>
-    </details>
-  </section>
+    </section>
 
-  <!-- BUILDER -->
-  <section class="builder" aria-labelledby="b-head">
-    <div class="shelf">
-      <div class="section-head" style="margin:0">
-        <h2 id="b-head">Build your breakfast</h2>
-        <p class="muted">Tap + to add a serving. The green badge shows protein per 100 calories: the higher it is, the more protein you get for the calories.</p>
+    <!-- WEEK -->
+    <section aria-labelledby="w-head">
+      <div class="section-head">
+        <h2 id="w-head">Last 7 days</h2>
+        <p class="muted">Save each day's plan to see protein by meal against your goal.</p>
       </div>
-      <div class="shelf-head">
-        <div class="chips" id="chips" role="group" aria-label="Food groups"></div>
-        <div class="tools">
-          <input id="search" type="search" placeholder="Search foods" aria-label="Search foods">
-          <select id="sort" aria-label="Sort foods">
-            <option value="density">Most protein per calorie</option>
-            <option value="protein">Most protein</option>
-            <option value="kcal">Fewest calories</option>
-            <option value="name">A to Z</option>
-          </select>
-        </div>
-      </div>
-      <div class="foods" id="foods"></div>
-      <p class="fineprint">Values are per serving shown, from USDA FoodData Central or typical labels. Brands differ, so check your yogurt label, especially flavored ones.</p>
-    </div>
-
-    <aside class="bowl" aria-labelledby="bowl-head">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
-        <h3 id="bowl-head">Your bowl</h3>
-        <button class="btn small" id="clear" type="button">Clear</button>
-      </div>
-      <div class="bowl-top">
-        <svg class="ring" id="ring" viewBox="0 0 128 128" role="img" aria-label="Protein progress"></svg>
-        <div class="meters" id="meters"></div>
-      </div>
-      <div class="split">
-        <span class="eyebrow">Where the calories come from</span>
-        <div class="splitbar" id="splitbar"></div>
-        <div class="legend" id="legend"></div>
-      </div>
-      <div class="items" id="items"></div>
-      <div class="tips" id="tips" aria-live="polite"></div>
-      <div class="rest" id="rest"></div>
-      <div class="save-row">
-        <input type="date" id="save-date" aria-label="Day to save">
-        <button class="btn primary small" id="save" type="button">Save to log</button>
-        <span class="toast" id="toast"></span>
-      </div>
-    </aside>
-  </section>
-
-  <!-- RECIPES -->
-  <section aria-labelledby="r-head">
-    <div class="section-head">
-      <h2 id="r-head">Recommended breakfasts</h2>
-      <p class="muted">Each one lands around 30-40 g protein for roughly 280-420 calories. Load one into your bowl, then adjust servings.</p>
-      <div class="chips" id="rchips" role="group" aria-label="Recipe filter"></div>
-    </div>
-    <div class="recipes" id="recipes"></div>
-  </section>
-
-  <!-- WEEK -->
-  <section aria-labelledby="w-head">
-    <div class="section-head">
-      <h2 id="w-head">Your last 7 days</h2>
-      <p class="muted">Saved breakfasts against your protein target, and how often you are repeating the same base.</p>
-    </div>
-    <div class="week">
       <div class="panel">
-        <span class="eyebrow">Breakfast protein (g)</span>
+        <div class="row-btns save-row edit-only">
+          <input type="date" id="save-date" aria-label="Day to save">
+          <button class="btn primary small" id="save" type="button">Save today's plan to log</button>
+          <span class="toast" id="toast"></span>
+        </div>
         <div class="chart-box" id="chart"></div>
       </div>
-      <div class="panel">
-        <span class="eyebrow">Variety</span>
-        <div class="variety" id="variety"></div>
-        <div id="variety-tip" class="tip"></div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- EVIDENCE -->
-  <section aria-labelledby="ev-head">
-    <div class="section-head">
-      <h2 id="ev-head">Why these targets</h2>
-      <p class="muted">What the research supports, and where it does not.</p>
+    <!-- SETTINGS -->
+    <section aria-label="Settings" class="edit-only">
+      <details class="settings" id="settings">
+        <summary>Goals: protein, calories and how they split across meals</summary>
+        <div class="settings-body">
+          <div class="fields">
+            <div class="field">
+              <label for="s-protein">Daily protein goal (g)</label>
+              <input id="s-protein" type="number" min="60" max="350" step="5">
+              <span class="hint" id="s-protein-hint"></span>
+            </div>
+            <div class="field">
+              <label for="s-cal">Daily calories</label>
+              <input id="s-cal" type="number" min="1200" max="4500" step="50">
+              <span class="hint" id="s-cal-hint"></span>
+            </div>
+            <div class="field">
+              <label for="s-weight">Current weight (lb)</label>
+              <input id="s-weight" type="number" min="80" max="600" step="1" placeholder="optional">
+            </div>
+            <div class="field">
+              <label for="s-goalw">Goal weight (lb)</label>
+              <input id="s-goalw" type="number" min="80" max="600" step="1" placeholder="optional">
+            </div>
+          </div>
+          <div class="sub">
+            <span class="eyebrow">Protein per meal (% of daily goal)</span>
+            <div class="fields" id="splitfields"></div>
+            <span class="hint muted" id="split-hint" style="font-size:12px"></span>
+          </div>
+          <div class="sub">
+            <span class="eyebrow">Optional: estimate daily calories (Mifflin-St Jeor, minus 500 kcal)</span>
+            <div class="fields">
+              <div class="field"><label for="e-sex">Sex</label><select id="e-sex"><option value="m">Male</option><option value="f">Female</option></select></div>
+              <div class="field"><label for="e-age">Age</label><input id="e-age" type="number" min="18" max="90" value="35"></div>
+              <div class="field"><label for="e-height">Height (inches)</label><input id="e-height" type="number" min="48" max="90" value="70"></div>
+              <div class="field"><label for="e-act">Activity</label>
+                <select id="e-act">
+                  <option value="1.2">Mostly sitting</option>
+                  <option value="1.375" selected>Light exercise 1-3 days/week</option>
+                  <option value="1.55">Moderate exercise 3-5 days/week</option>
+                </select></div>
+            </div>
+            <div class="row-btns"><button class="btn small" id="e-run" type="button">Estimate and use</button><span class="muted" id="e-out" style="font-size:13px"></span></div>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- EVIDENCE -->
+    <section aria-labelledby="ev-head">
+      <div class="section-head">
+        <h2 id="ev-head">What the research says</h2>
+      </div>
+      <div class="evidence">
+        <div class="fact">
+          <span class="claim">0.7-1.0 g per lb is the top of the studied range.</span>
+          <p>That equals 1.6-2.2 g/kg. A meta-analysis of 49 trials found muscle gains from extra protein leveled off around 0.73 g/lb (1.6 g/kg) in people lifting weights. Going to 1 g/lb adds a safety margin while dieting.</p>
+          <p class="muted"><a href="https://science.mcmaster.ca/protein-supplements-work-to-a-point/" target="_blank" rel="noopener">Morton et al., Br J Sports Med 2018</a></p>
+        </div>
+        <div class="fact">
+          <span class="claim">With a lot of weight to lose, use goal weight.</span>
+          <p>Per-pound formulas based on total weight can overstate needs when body fat is high. Clinical reviews suggest goal, adjusted or lean weight instead. Enter your goal weight under Goals to see that range.</p>
+          <p class="muted"><a href="https://pure.amsterdamumc.nl/ws/files/142148308/Protein-requirement-in-obesity.pdf" target="_blank" rel="noopener">Protein requirement in obesity (review)</a></p>
+        </div>
+        <div class="fact">
+          <span class="claim">Higher protein helps keep muscle while losing fat.</span>
+          <p>Trials of calorie-cut diets found more fat loss and better muscle retention with more protein, mostly among people who stuck with it. 200 g protein is 800 kcal, so lean sources matter.</p>
+          <p class="muted"><a href="https://pubmed.ncbi.nlm.nih.gov/25926512/" target="_blank" rel="noopener">Leidy et al., Am J Clin Nutr 2015</a></p>
+        </div>
+        <div class="fact">
+          <span class="claim">Total calories still decide weight loss.</span>
+          <p>A meta-analysis of 13 trials found adding breakfast did not help weight loss. Spreading protein across meals helps with fullness, but the daily calorie number is what moves the scale.</p>
+          <p class="muted"><a href="https://www.bmj.com/content/364/bmj.l42" target="_blank" rel="noopener">Sievert et al., BMJ 2019</a></p>
+        </div>
+      </div>
+      <p class="fineprint" style="margin-top:18px">Planning tool, not medical advice. High protein intake is generally considered safe for healthy kidneys; if you have kidney disease, diabetes or take diet-sensitive medication, check your targets with a doctor or registered dietitian.</p>
+    </section>
+  </div>
+
+  <!-- ================= COOK VIEW ================= -->
+  <div id="view-cook" class="cook" hidden>
+    <div class="section-head" style="margin:0">
+      <h2>Cook view</h2>
+      <p class="muted">The current plan with amounts, steps and a grocery list.</p>
     </div>
-    <div class="evidence">
-      <div class="fact">
-        <span class="claim">Aim for 1.2-1.6 g protein per kg body weight while losing weight.</span>
-        <p>Controlled trials found higher-protein, calorie-reduced diets led to more fat loss and better muscle retention than standard-protein diets. Benefits showed up mainly in people who stuck with it.</p>
-        <p class="muted"><a href="https://pubmed.ncbi.nlm.nih.gov/25926512/" target="_blank" rel="noopener">Leidy et al., Am J Clin Nutr 2015</a></p>
-      </div>
-      <div class="fact">
-        <span class="claim">About 25-35 g protein at breakfast is a practical target.</span>
-        <p>In a small study, a 35 g protein breakfast increased fullness and cut evening snacking compared with a cereal breakfast of the same calories. Plain Greek yogurt gives about 17 g per 170 g cup for 100 calories.</p>
-        <p class="muted"><a href="https://munewsarchives.missouri.edu/news-releases/2013/0326-protein-rich-breakfasts-prevent-unhealthy-snacking-in-the-evening-mu-researcher-finds" target="_blank" rel="noopener">Leidy, Univ. of Missouri 2013</a> (20 participants)</p>
-      </div>
-      <div class="fact">
-        <span class="claim">Eating breakfast does not cause weight loss by itself.</span>
-        <p>A meta-analysis of 13 trials found breakfast eaters ate about 260 more calories a day and weighed slightly more than skippers. Total daily calories decide weight loss; a protein breakfast helps only if it keeps you full and on target later.</p>
-        <p class="muted"><a href="https://www.bmj.com/content/364/bmj.l42" target="_blank" rel="noopener">Sievert et al., BMJ 2019</a></p>
-      </div>
-      <div class="fact">
-        <span class="claim">Plain beats flavored yogurt, and fiber matters too.</span>
-        <p>Flavored yogurts often carry 9+ g added sugar per cup. US guidelines cap added sugar at 10% of calories and suggest 14 g fiber per 1,000 calories. Berries, chia and flax add fiber without much sugar.</p>
-        <p class="muted"><a href="https://www.dietaryguidelines.gov/" target="_blank" rel="noopener">Dietary Guidelines for Americans</a></p>
+    <div class="cook-grid">
+      <div style="display:grid;gap:14px" id="cookmeals"></div>
+      <div style="display:grid;gap:16px">
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+            <h3>Grocery list</h3>
+            <label style="font-size:13px;display:flex;gap:6px;align-items:center">For
+              <select id="days" aria-label="Number of days">
+                <option value="1">1 day</option><option value="3">3 days</option><option value="5">5 days</option><option value="7" selected>7 days</option>
+              </select></label>
+          </div>
+          <div class="grocery" id="grocery"></div>
+          <p class="fineprint">Meat and fish marked "cooked" are cooked weights. Raw weighs about a third more (6 oz cooked chicken is about 8 oz raw).</p>
+        </div>
+        <div class="panel">
+          <div class="field">
+            <label for="notes">Notes for the cook</label>
+            <textarea id="notes" placeholder="Allergies, likes and dislikes, prep days, portions to pack..."></textarea>
+            <span class="hint" id="notes-hint"></span>
+          </div>
+        </div>
+        <div class="panel share-box">
+          <h3>Share the plan</h3>
+          <p id="share-text">Use the Share menu on this page to invite your cook. Anyone you share with sees this plan and every change you make.</p>
+          <div class="row-btns">
+            <button class="btn small" id="copy" type="button">Copy plan as text</button>
+            <span class="toast" id="ctoast"></span>
+          </div>
+          <textarea id="copy-fallback" hidden aria-label="Plan as text"></textarea>
+        </div>
       </div>
     </div>
-    <p class="fineprint" style="margin-top:18px">This is a planning tool, not medical advice. If you have kidney disease, diabetes, are pregnant, or take medication affected by diet, check targets with your doctor or a registered dietitian.</p>
-  </section>
+  </div>
 
 </div>
 
@@ -380,438 +471,642 @@ details.settings summary { padding: 12px 16px; cursor: pointer; font-weight: 700
   "use strict";
 
   // ---------- Food data (per serving) ----------
-  // k=kcal, p=protein, c=carbs, f=fat, fb=fiber, s=total sugar, a=added sugar (grams)
+  // k kcal, p protein, c carbs, f fat, fb fiber, a added sugar (g). m = meals it's offered for (b l d s).
+  // buy = [amount per serving, unit] for the grocery list.
   const GROUPS = [
-    { id: "dairy", name: "Yogurt & dairy", color: "var(--protein)" },
-    { id: "protein", name: "Eggs & protein", color: "#7A5AC8" },
-    { id: "fruit", name: "Fruit", color: "#C2416B" },
-    { id: "seeds", name: "Seeds, nuts & toppings", color: "var(--fat)" },
-    { id: "grain", name: "Oats & bread", color: "var(--carb)" },
-    { id: "savory", name: "Veg & savory", color: "var(--fiber)" },
-    { id: "sweet", name: "Sweeteners", color: "var(--warn)" }
+    ["dairy", "Yogurt & dairy"], ["meat", "Meat & fish"], ["eggs", "Eggs & shakes"], ["plant", "Beans & tofu"],
+    ["fruit", "Fruit"], ["veg", "Vegetables"], ["grain", "Grains & starches"], ["fat", "Nuts, seeds & extras"]
   ];
+  const F = (id, g, m, e, n, sv, k, p, c, f, fb, a, buy, extra) => Object.assign({ id, g, m, e, n, sv, k, p, c, f, fb, a, buy }, extra || {});
   const FOODS = [
-    { id: "gy0", g: "dairy", n: "Greek yogurt, plain nonfat", sv: "170 g (3/4 cup)", k: 100, p: 17, c: 6, f: 0.7, fb: 0, s: 6, a: 0, base: "yogurt" },
-    { id: "gy2", g: "dairy", n: "Greek yogurt, plain 2%", sv: "170 g (3/4 cup)", k: 130, p: 17, c: 6, f: 3.5, fb: 0, s: 6, a: 0, base: "yogurt" },
-    { id: "gyv", g: "dairy", n: "Greek yogurt, vanilla nonfat", sv: "150 g cup", k: 120, p: 12, c: 16, f: 0, fb: 0, s: 13, a: 9, base: "yogurt", swap: "gy0" },
-    { id: "skyr", g: "dairy", n: "Icelandic skyr, plain nonfat", sv: "150 g cup", k: 90, p: 16, c: 6, f: 0, fb: 0, s: 4, a: 0, base: "yogurt" },
-    { id: "cott", g: "dairy", n: "Cottage cheese 2%", sv: "1/2 cup (113 g)", k: 92, p: 12, c: 5, f: 2.5, fb: 0, s: 4, a: 0, base: "cottage" },
-    { id: "milk", g: "dairy", n: "Skim milk", sv: "1 cup", k: 83, p: 8.3, c: 12, f: 0.2, fb: 0, s: 12, a: 0 },
-    { id: "almondmilk", g: "dairy", n: "Almond milk, unsweetened", sv: "1 cup", k: 35, p: 1, c: 1, f: 2.5, fb: 0.5, s: 0, a: 0 },
-    { id: "feta", g: "dairy", n: "Feta cheese", sv: "1 oz (28 g)", k: 75, p: 4, c: 1.2, f: 6, fb: 0, s: 1.4, a: 0 },
+    F("gy0", "dairy", "blds", "🥣", "Greek yogurt, plain nonfat", "6 oz (170 g)", 100, 17, 6, 0.7, 0, 0, [6, "oz"]),
+    F("gy2", "dairy", "bls", "🥣", "Greek yogurt, plain 2%", "6 oz (170 g)", 130, 17, 6, 3.5, 0, 0, [6, "oz"]),
+    F("gyv", "dairy", "bs", "🍦", "Greek yogurt, vanilla", "5.3 oz cup", 120, 12, 16, 0, 0, 9, [1, "cup"], { swap: "gy0" }),
+    F("skyr", "dairy", "bs", "🥛", "Icelandic skyr, plain", "5.3 oz cup", 90, 16, 6, 0, 0, 0, [1, "cup"]),
+    F("cott", "dairy", "bls", "🧀", "Cottage cheese 2%", "1/2 cup", 92, 12, 5, 2.5, 0, 0, [0.5, "cup"]),
+    F("string", "dairy", "s", "🧀", "String cheese, part-skim", "1 stick", 80, 7, 1, 5.5, 0, 0, [1, "stick"]),
+    F("mozz", "dairy", "ld", "🧀", "Mozzarella, part-skim shredded", "1/4 cup", 72, 7, 0.8, 4.5, 0, 0, [0.25, "cup"]),
+    F("feta", "dairy", "bld", "🧀", "Feta cheese", "1 oz", 75, 4, 1.2, 6, 0, 0, [1, "oz"]),
+    F("almondmilk", "dairy", "bs", "🥛", "Almond milk, unsweetened", "1 cup", 35, 1, 1, 2.5, 0.5, 0, [1, "cup"]),
 
-    { id: "egg", g: "protein", n: "Egg, large", sv: "1 egg", k: 72, p: 6.3, c: 0.4, f: 4.8, fb: 0, s: 0.2, a: 0, base: "eggs" },
-    { id: "ew", g: "protein", n: "Liquid egg whites", sv: "1/2 cup (122 g)", k: 63, p: 13.3, c: 0.9, f: 0.2, fb: 0, s: 0.9, a: 0, base: "eggs" },
-    { id: "whey", g: "protein", n: "Whey protein powder", sv: "1 scoop (30 g)", k: 120, p: 24, c: 3, f: 1.5, fb: 0, s: 2, a: 0, base: "shake" },
-    { id: "salmon", g: "protein", n: "Smoked salmon", sv: "2 oz (56 g)", k: 66, p: 10.4, c: 0, f: 2.4, fb: 0, s: 0, a: 0, base: "fish" },
+    F("chicken", "meat", "ld", "🍗", "Chicken breast, cooked", "4 oz", 187, 35, 0, 4, 0, 0, [4, "oz"]),
+    F("turkey99", "meat", "ld", "🦃", "Ground turkey 99% lean", "4 oz raw", 120, 26, 0, 1.5, 0, 0, [4, "oz"]),
+    F("turkey93", "meat", "ld", "🦃", "Ground turkey 93% lean", "4 oz raw", 170, 21, 0, 9, 0, 0, [4, "oz"], { swap: "turkey99" }),
+    F("sirloin", "meat", "d", "🥩", "Top sirloin steak, cooked", "4 oz", 207, 34, 0, 7, 0, 0, [4, "oz"]),
+    F("salmon", "meat", "ld", "🐟", "Salmon fillet, cooked", "4 oz", 233, 25, 0, 14, 0, 0, [4, "oz"]),
+    F("shrimp", "meat", "ld", "🍤", "Shrimp, cooked", "4 oz", 112, 27, 0.2, 0.3, 0, 0, [4, "oz"]),
+    F("cod", "meat", "ld", "🐟", "Cod, cooked", "4 oz", 119, 26, 0, 1, 0, 0, [4, "oz"]),
+    F("tuna", "meat", "ls", "🐟", "Tuna in water, drained", "4 oz (1 can)", 131, 29, 0, 1, 0, 0, [1, "can"]),
+    F("smsalmon", "meat", "bl", "🐟", "Smoked salmon", "2 oz", 66, 10.4, 0, 2.4, 0, 0, [2, "oz"]),
+    F("deli", "meat", "ls", "🥪", "Turkey breast deli slices", "2 oz", 60, 12, 1, 1, 0, 0, [2, "oz"]),
+    F("jerky", "meat", "s", "🥓", "Beef jerky", "1 oz", 80, 11, 6, 1, 0, 4, [1, "oz"]),
 
-    { id: "rasp", g: "fruit", n: "Raspberries", sv: "1/2 cup", k: 32, p: 0.7, c: 7.3, f: 0.4, fb: 4, s: 2.7, a: 0 },
-    { id: "blue", g: "fruit", n: "Blueberries", sv: "1/2 cup", k: 42, p: 0.5, c: 10.7, f: 0.2, fb: 1.8, s: 7.4, a: 0 },
-    { id: "straw", g: "fruit", n: "Strawberries, sliced", sv: "1/2 cup", k: 27, p: 0.6, c: 6.4, f: 0.2, fb: 1.7, s: 4.1, a: 0 },
-    { id: "banana", g: "fruit", n: "Banana", sv: "1/2 medium", k: 53, p: 0.6, c: 13.5, f: 0.2, fb: 1.5, s: 7.2, a: 0 },
-    { id: "apple", g: "fruit", n: "Apple, diced", sv: "1/2 medium", k: 47, p: 0.2, c: 12.5, f: 0.2, fb: 2.2, s: 9.4, a: 0 },
+    F("egg", "eggs", "bl", "🥚", "Egg, large", "1 egg", 72, 6.3, 0.4, 4.8, 0, 0, [1, "egg"]),
+    F("ew", "eggs", "bl", "🍳", "Liquid egg whites", "1/2 cup", 63, 13.3, 0.9, 0.2, 0, 0, [0.5, "cup"]),
+    F("whey", "eggs", "bs", "🥤", "Whey protein powder", "1 scoop (30 g)", 120, 24, 3, 1.5, 0, 0, [1, "scoop"]),
+    F("shake", "eggs", "bs", "🥤", "Protein shake, ready-to-drink", "11 oz bottle", 160, 30, 5, 3, 1, 0, [1, "bottle"]),
 
-    { id: "chia", g: "seeds", n: "Chia seeds", sv: "1 tbsp (12 g)", k: 58, p: 2, c: 5, f: 3.7, fb: 4.1, s: 0, a: 0 },
-    { id: "flax", g: "seeds", n: "Ground flaxseed", sv: "1 tbsp (7 g)", k: 37, p: 1.3, c: 2, f: 3, fb: 1.9, s: 0.1, a: 0 },
-    { id: "hemp", g: "seeds", n: "Hemp hearts", sv: "1 tbsp (10 g)", k: 55, p: 3.2, c: 0.9, f: 4.9, fb: 0.4, s: 0.2, a: 0 },
-    { id: "pepita", g: "seeds", n: "Pumpkin seeds", sv: "1/2 oz (14 g)", k: 78, p: 4.2, c: 1.5, f: 6.9, fb: 0.8, s: 0.2, a: 0 },
-    { id: "almond", g: "seeds", n: "Almonds, sliced", sv: "1/2 oz (14 g)", k: 82, p: 3, c: 3, f: 7, fb: 1.7, s: 0.6, a: 0 },
-    { id: "walnut", g: "seeds", n: "Walnuts", sv: "1/2 oz (14 g)", k: 93, p: 2.2, c: 2, f: 9.2, fb: 1, s: 0.4, a: 0 },
-    { id: "pb2", g: "seeds", n: "Powdered peanut butter", sv: "2 tbsp (12 g)", k: 60, p: 6, c: 5, f: 1.5, fb: 1, s: 2, a: 1 },
-    { id: "pb", g: "seeds", n: "Peanut butter, natural", sv: "1 tbsp (16 g)", k: 94, p: 3.6, c: 3.5, f: 8, fb: 0.8, s: 1.5, a: 0, swap: "pb2" },
-    { id: "granola", g: "seeds", n: "Granola", sv: "1/4 cup (30 g)", k: 130, p: 3, c: 20, f: 4.5, fb: 2, s: 8, a: 7, swap: "pepita" },
-    { id: "cinn", g: "seeds", n: "Cinnamon", sv: "1 tsp", k: 6, p: 0.1, c: 2.1, f: 0, fb: 1.4, s: 0, a: 0 },
+    F("tofu", "plant", "ld", "⬜", "Tofu, extra-firm", "4 oz", 120, 12, 2, 7, 1, 0, [4, "oz"]),
+    F("tempeh", "plant", "ld", "🟫", "Tempeh", "3 oz", 163, 17, 6.5, 9.2, 0, 0, [3, "oz"]),
+    F("edamame", "plant", "lds", "🫛", "Edamame, shelled", "1/2 cup", 94, 9.2, 7, 4, 4, 0, [0.5, "cup"]),
+    F("lentils", "plant", "ld", "🫘", "Lentils, cooked", "1/2 cup", 115, 9, 20, 0.4, 7.8, 0, [0.5, "cup"]),
+    F("beans", "plant", "ld", "🫘", "Black beans, cooked", "1/2 cup", 114, 7.6, 20, 0.5, 7.5, 0, [0.5, "cup"]),
 
-    { id: "oats", g: "grain", n: "Rolled oats (dry)", sv: "1/2 cup (40 g)", k: 150, p: 5, c: 27, f: 2.5, fb: 4, s: 1, a: 0 },
-    { id: "toast", g: "grain", n: "Whole-wheat toast", sv: "1 slice", k: 80, p: 4, c: 14, f: 1, fb: 2, s: 1.5, a: 1 },
-    { id: "tortilla", g: "grain", n: "Whole-wheat tortilla", sv: "1 (8 inch)", k: 130, p: 4, c: 22, f: 3, fb: 3, s: 1, a: 0 },
+    F("rasp", "fruit", "bs", "🍓", "Raspberries", "1/2 cup", 32, 0.7, 7.3, 0.4, 4, 0, [0.5, "cup"]),
+    F("blue", "fruit", "bs", "🫐", "Blueberries", "1/2 cup", 42, 0.5, 10.7, 0.2, 1.8, 0, [0.5, "cup"]),
+    F("straw", "fruit", "bs", "🍓", "Strawberries", "1/2 cup", 27, 0.6, 6.4, 0.2, 1.7, 0, [0.5, "cup"]),
+    F("banana", "fruit", "bs", "🍌", "Banana", "1/2 medium", 53, 0.6, 13.5, 0.2, 1.5, 0, [0.5, "banana"]),
+    F("apple", "fruit", "bs", "🍎", "Apple", "1/2 medium", 47, 0.2, 12.5, 0.2, 2.2, 0, [0.5, "apple"]),
 
-    { id: "spinach", g: "savory", n: "Spinach, raw", sv: "1 cup", k: 7, p: 0.9, c: 1.1, f: 0.1, fb: 0.7, s: 0.1, a: 0 },
-    { id: "salsa", g: "savory", n: "Salsa", sv: "2 tbsp", k: 10, p: 0.5, c: 2, f: 0, fb: 0.5, s: 1, a: 0 },
-    { id: "avocado", g: "savory", n: "Avocado", sv: "1/4 fruit (50 g)", k: 80, p: 1, c: 4.3, f: 7.3, fb: 3.4, s: 0.3, a: 0 },
+    F("spinach", "veg", "bld", "🥬", "Spinach, raw", "1 cup", 7, 0.9, 1.1, 0.1, 0.7, 0, [1, "cup"]),
+    F("greens", "veg", "ld", "🥗", "Mixed salad greens", "2 cups", 10, 1, 2, 0, 1, 0, [2, "cups"]),
+    F("broccoli", "veg", "ld", "🥦", "Broccoli, cooked", "1 cup", 55, 3.7, 11, 0.6, 5.1, 0, [1, "cup"]),
+    F("greenbeans", "veg", "ld", "🫛", "Green beans, cooked", "1 cup", 44, 2.4, 10, 0.4, 4, 0, [1, "cup"]),
+    F("pepper", "veg", "blds", "🫑", "Bell pepper, sliced", "1/2 cup", 23, 0.7, 4.5, 0.2, 1.6, 0, [0.5, "cup"]),
+    F("caulirice", "veg", "ld", "🥦", "Cauliflower rice", "1 cup", 25, 2, 5, 0.3, 2, 0, [1, "cup"]),
+    F("salsa", "veg", "bld", "🍅", "Salsa", "2 tbsp", 10, 0.5, 2, 0, 0.5, 0, [2, "tbsp"]),
+    F("marinara", "veg", "ld", "🍅", "Marinara sauce", "1/2 cup", 66, 2, 10, 2, 2.5, 2, [0.5, "cup"]),
 
-    { id: "honey", g: "sweet", n: "Honey", sv: "1 tsp", k: 21, p: 0, c: 5.8, f: 0, fb: 0, s: 5.8, a: 5.8, swap: "cinn" },
-    { id: "maple", g: "sweet", n: "Maple syrup", sv: "1 tsp", k: 17, p: 0, c: 4.4, f: 0, fb: 0, s: 4, a: 4, swap: "cinn" }
+    F("oats", "grain", "b", "🌾", "Rolled oats, dry", "1/2 cup", 150, 5, 27, 2.5, 4, 0, [0.5, "cup"]),
+    F("toast", "grain", "bl", "🍞", "Whole-wheat bread", "1 slice", 80, 4, 14, 1, 2, 1, [1, "slice"]),
+    F("tortilla", "grain", "bld", "🌯", "Whole-wheat tortilla", "1 (8 inch)", 130, 4, 22, 3, 3, 0, [1, "tortilla"]),
+    F("rice", "grain", "ld", "🍚", "Brown rice, cooked", "1/2 cup", 108, 2.5, 22, 0.9, 1.8, 0, [0.5, "cup"]),
+    F("quinoa", "grain", "ld", "🍚", "Quinoa, cooked", "1/2 cup", 111, 4, 20, 1.8, 2.6, 0, [0.5, "cup"]),
+    F("sweetpot", "grain", "ld", "🍠", "Sweet potato, baked", "1 medium", 103, 2.3, 24, 0.2, 3.8, 0, [1, "potato"]),
+    F("pasta", "grain", "ld", "🍝", "Whole-wheat pasta, cooked", "1/2 cup", 87, 3.7, 18.5, 0.4, 3.2, 0, [0.5, "cup"]),
+
+    F("chia", "fat", "bs", "⚫", "Chia seeds", "1 tbsp", 58, 2, 5, 3.7, 4.1, 0, [1, "tbsp"]),
+    F("flax", "fat", "bs", "🟤", "Ground flaxseed", "1 tbsp", 37, 1.3, 2, 3, 1.9, 0, [1, "tbsp"]),
+    F("hemp", "fat", "bs", "🌱", "Hemp hearts", "1 tbsp", 55, 3.2, 0.9, 4.9, 0.4, 0, [1, "tbsp"]),
+    F("pepita", "fat", "bls", "🎃", "Pumpkin seeds", "1/2 oz", 78, 4.2, 1.5, 6.9, 0.8, 0, [0.5, "oz"]),
+    F("almond", "fat", "bs", "🌰", "Almonds", "1/2 oz", 82, 3, 3, 7, 1.7, 0, [0.5, "oz"]),
+    F("walnut", "fat", "bs", "🌰", "Walnuts", "1/2 oz", 93, 2.2, 2, 9.2, 1, 0, [0.5, "oz"]),
+    F("pb2", "fat", "bs", "🥜", "Powdered peanut butter", "2 tbsp", 60, 6, 5, 1.5, 1, 1, [2, "tbsp"]),
+    F("pb", "fat", "bs", "🥜", "Peanut butter", "1 tbsp", 94, 3.6, 3.5, 8, 0.8, 0, [1, "tbsp"], { swap: "pb2" }),
+    F("granola", "fat", "b", "🥣", "Granola", "1/4 cup", 130, 3, 20, 4.5, 2, 7, [0.25, "cup"], { swap: "pepita" }),
+    F("avocado", "fat", "bld", "🥑", "Avocado", "1/4 fruit", 80, 1, 4.3, 7.3, 3.4, 0, [0.25, "avocado"]),
+    F("hummus", "fat", "ls", "🫙", "Hummus", "2 tbsp", 70, 2, 4, 5, 1, 0, [2, "tbsp"]),
+    F("oil", "fat", "ld", "🫒", "Olive oil", "1 tsp", 40, 0, 0, 4.5, 0, 0, [1, "tsp"]),
+    F("cinn", "fat", "bs", "🟫", "Cinnamon", "1 tsp", 6, 0.1, 2.1, 0, 1.4, 0, [1, "tsp"]),
+    F("honey", "fat", "bs", "🍯", "Honey", "1 tsp", 21, 0, 5.8, 0, 0, 5.8, [1, "tsp"], { swap: "cinn" })
   ];
   const BY_ID = Object.fromEntries(FOODS.map(f => [f.id, f]));
-  const GROUP_BY_ID = Object.fromEntries(GROUPS.map(g => [g.id, g]));
-  const BASE_NAMES = { yogurt: "Greek yogurt / skyr", cottage: "Cottage cheese", eggs: "Eggs", shake: "Protein powder", fish: "Fish" };
 
-  const RECIPES = [
-    { id: "r1", n: "Berry Chia Yogurt Bowl", tag: "yogurt", items: { gy0: 2, rasp: 1, chia: 1, almond: 1 }, why: "Raspberries and chia push fiber near 10 g with almost no sugar." },
-    { id: "r2", n: "PB & Banana Power Bowl", tag: "yogurt", items: { gy0: 1.5, pb2: 1, banana: 1, cinn: 1 }, why: "Powdered peanut butter gives the flavor at a third of the calories of regular." },
-    { id: "r3", n: "Protein Pudding Bowl", tag: "yogurt", items: { gy0: 1.5, whey: 0.5, blue: 1, flax: 1 }, why: "Half a scoop stirred in turns yogurt thick like pudding and tops 30 g protein." },
-    { id: "r4", n: "Apple Pie Yogurt", tag: "yogurt", items: { gy0: 2, apple: 1, walnut: 1, cinn: 1 }, why: "Cinnamon and apple add sweetness, so you can skip honey." },
-    { id: "r5", n: "Skyr Strawberry Crunch", tag: "yogurt", items: { skyr: 2, straw: 1, pepita: 1, flax: 1 }, why: "Pumpkin seeds replace granola for crunch with more protein and no added sugar." },
-    { id: "r6", n: "Savory Yogurt Egg Toast", tag: "yogurt", items: { toast: 1, gy2: 0.5, egg: 1, ew: 1, spinach: 1 }, why: "Greek yogurt as the spread instead of butter or mayo. A good break from sweet bowls." },
-    { id: "r7", n: "Overnight Protein Oats", tag: "switch", items: { oats: 1, gy0: 1, whey: 0.5, almondmilk: 0.5, rasp: 1, chia: 1 }, why: "Make it the night before. The most filling option here, with the most fiber." },
-    { id: "r8", n: "Veggie Egg Scramble + Feta", tag: "switch", items: { ew: 1.5, egg: 1, spinach: 1, feta: 0.5, toast: 1 }, why: "Mixing whites with one whole egg keeps the yolk flavor at lower calories." },
-    { id: "r9", n: "Cottage Cheese Berry Bowl", tag: "switch", items: { cott: 2.5, blue: 1, hemp: 1, cinn: 1 }, why: "Same idea as a yogurt bowl with a different texture. Cottage cheese has more sodium, so rotate it in." },
-    { id: "r10", n: "Smoked Salmon Toast", tag: "switch", items: { toast: 1, salmon: 1.5, gy0: 0.5, egg: 1 }, why: "Adds omega-3 fats from fish. Salmon is salty, so watch it if you track sodium." },
-    { id: "r11", n: "Egg White Breakfast Burrito", tag: "switch", items: { tortilla: 1, ew: 1, egg: 1, salsa: 1, avocado: 0.5, gy0: 0.5 }, why: "Greek yogurt in place of sour cream. Easy to wrap and take with you." },
-    { id: "w1", n: "Café Yogurt Parfait", tag: "watch", items: { gyv: 1, granola: 1, honey: 2, blue: 0.5 }, why: "Similar calories to the bowls above with about half the protein and ~28 g added sugar. Swap to plain yogurt and seeds." }
+  const MEALS = [
+    { id: "breakfast", name: "Breakfast", short: "b" },
+    { id: "lunch", name: "Lunch", short: "l" },
+    { id: "dinner", name: "Dinner", short: "d" },
+    { id: "snacks", name: "Snacks", short: "s" }
   ];
+  const MEAL_BY_ID = Object.fromEntries(MEALS.map(m => [m.id, m]));
+  const mc = id => `var(--m-${id})`;
+
+  const IDEAS = [
+    // Breakfast
+    { id: "b1", meal: "breakfast", n: "Protein Berry Yogurt Bowl", items: { gy0: 2, whey: 0.5, rasp: 1, chia: 1, hemp: 1 }, why: "Half a scoop of whey stirred in makes it thick like pudding.", steps: ["Stir whey into the yogurt until smooth.", "Top with raspberries, chia and hemp."] },
+    { id: "b2", meal: "breakfast", n: "PB & Banana Power Bowl", items: { gy0: 2, pb2: 1, banana: 1, whey: 0.5, cinn: 1 }, why: "Powdered peanut butter gives the flavor at a third of the calories.", steps: ["Mix powdered peanut butter and whey into the yogurt.", "Top with sliced banana and cinnamon."] },
+    { id: "b3", meal: "breakfast", n: "Apple Pie Yogurt", items: { gy0: 2.5, apple: 1, walnut: 1, cinn: 1 }, why: "Cinnamon and apple sweeten it, so no honey needed.", steps: ["Dice the apple; microwave 1 min with cinnamon if you like it warm.", "Spoon over yogurt and add walnuts."] },
+    { id: "b4", meal: "breakfast", n: "Egg White Veggie Scramble", items: { ew: 2, egg: 1, spinach: 1, pepper: 1, feta: 0.5, toast: 1 }, why: "Whites plus one whole egg keeps the flavor at lower calories.", steps: ["Sauté pepper and spinach 2 min.", "Add whisked whites and egg; stir until set.", "Top with feta; serve with toast."] },
+    { id: "b5", meal: "breakfast", n: "Overnight Protein Oats", items: { oats: 1, gy0: 1, whey: 0.5, almondmilk: 0.5, rasp: 1, chia: 1 }, why: "Make it the night before. Highest fiber of the breakfasts.", steps: ["Mix oats, yogurt, whey, almond milk and chia in a jar.", "Refrigerate overnight; top with berries."] },
+    { id: "b6", meal: "breakfast", n: "Smoked Salmon Toast", items: { toast: 1, smsalmon: 1.5, gy0: 0.5, egg: 2 }, why: "Greek yogurt in place of cream cheese.", steps: ["Toast bread and spread with yogurt.", "Layer salmon; serve with 2 boiled or scrambled eggs."] },
+    { id: "bw", meal: "breakfast", n: "Café Yogurt Parfait", watch: true, items: { gyv: 1, granola: 1, honey: 2, blue: 0.5 }, why: "About the same calories as the bowls above, with a third of the protein and ~28 g added sugar.", steps: ["Shown for comparison. Swap to plain yogurt and seeds."] },
+    // Lunch
+    { id: "l1", meal: "lunch", n: "Greek Chicken Bowl", items: { chicken: 1.5, quinoa: 1, greens: 1, pepper: 1, feta: 0.5, gy0: 0.5 }, why: "Greek yogurt with lemon and garlic makes a quick tzatziki.", steps: ["Slice chicken over greens and quinoa.", "Add pepper and feta.", "Mix yogurt with lemon, garlic and dill for the sauce."] },
+    { id: "l2", meal: "lunch", n: "Tuna Salad Sandwich", items: { tuna: 1.5, gy0: 0.5, toast: 2, greens: 0.5, pepper: 1 }, why: "Greek yogurt instead of mayo saves about 150 kcal.", steps: ["Mix tuna with yogurt, mustard, salt and pepper.", "Serve on bread with greens and sliced pepper."] },
+    { id: "l3", meal: "lunch", n: "Turkey Taco Bowl", items: { turkey99: 2, beans: 1, rice: 1, salsa: 1, greens: 1, gy0: 0.5 }, why: "Greek yogurt replaces sour cream.", steps: ["Brown turkey with taco seasoning.", "Layer rice, beans, greens and turkey.", "Top with salsa and a spoon of yogurt."] },
+    { id: "l4", meal: "lunch", n: "Shrimp & Edamame Salad", items: { shrimp: 1.5, edamame: 1, greens: 1, pepper: 1, quinoa: 1, oil: 1 }, why: "Fast if you buy cooked shrimp and shelled edamame.", steps: ["Toss greens, quinoa, edamame and pepper.", "Top with shrimp; dress with olive oil and lemon."] },
+    { id: "l5", meal: "lunch", n: "Tofu & Edamame Rice Bowl", items: { tofu: 2, edamame: 1.5, rice: 1, broccoli: 1 }, why: "Plant-based option. Less protein per calorie than meat.", steps: ["Press and cube tofu; pan-fry until golden.", "Serve over rice with broccoli and edamame; add soy sauce."] },
+    // Dinner
+    { id: "d1", meal: "dinner", n: "Sirloin, Sweet Potato & Green Beans", items: { sirloin: 1.5, sweetpot: 1, greenbeans: 1, oil: 1, gy0: 0.5 }, why: "Lean steak cut; yogurt with herbs works as a sauce.", steps: ["Season and sear steak 4-5 min per side; rest 5 min.", "Bake sweet potato (or microwave 6-8 min).", "Sauté green beans in olive oil."] },
+    { id: "d2", meal: "dinner", n: "Lemon Salmon & Broccoli", items: { salmon: 1.5, broccoli: 1, quinoa: 1, gy0: 0.5 }, why: "Adds omega-3 fats. Salmon has more calories than white fish.", steps: ["Bake salmon at 400°F for 12-15 min with lemon.", "Steam broccoli; serve with quinoa.", "Mix yogurt with dill and lemon for sauce."] },
+    { id: "d3", meal: "dinner", n: "Shrimp Stir-Fry", items: { shrimp: 2, pepper: 2, broccoli: 1, rice: 1, oil: 1 }, why: "Most protein per calorie of the dinners.", steps: ["Stir-fry pepper and broccoli in oil 3 min.", "Add shrimp and cook 2-3 min until pink.", "Season with soy sauce, garlic and ginger; serve over rice."] },
+    { id: "d4", meal: "dinner", n: "Turkey Meat Sauce Pasta", items: { turkey99: 2, marinara: 1, pasta: 2, mozz: 1, greens: 1 }, why: "99% lean turkey keeps the sauce lean.", steps: ["Brown turkey; add marinara and simmer 10 min.", "Toss with cooked pasta; top with mozzarella.", "Serve with a side salad."] },
+    { id: "d5", meal: "dinner", n: "Sheet-Pan Chicken & Veggies", items: { chicken: 1.5, sweetpot: 1, broccoli: 1, oil: 1 }, why: "One pan. Cook extra chicken for tomorrow's lunch.", steps: ["Cube sweet potato; toss with oil and roast at 425°F for 10 min.", "Add chicken and broccoli; roast 20 min until chicken reaches 165°F."] },
+    { id: "d6", meal: "dinner", n: "Cod Tacos", items: { cod: 1.5, tortilla: 2, salsa: 1, gy0: 0.5, greens: 0.5 }, why: "White fish is very lean, so tortillas fit.", steps: ["Season cod and bake at 400°F for 10-12 min.", "Flake into warm tortillas.", "Top with greens, salsa and yogurt."] },
+    // Snacks
+    { id: "s1", meal: "snacks", n: "Shake & Berries", items: { shake: 1, straw: 1 }, why: "Easiest 30 g protein of the day.", steps: ["Grab and go."] },
+    { id: "s2", meal: "snacks", n: "Cottage Cheese Cup", items: { cott: 2, blue: 1, cinn: 1 }, why: "Slow-digesting protein; good in the evening.", steps: ["Top cottage cheese with blueberries and cinnamon."] },
+    { id: "s3", meal: "snacks", n: "Jerky & String Cheese", items: { jerky: 1, string: 1, apple: 1 }, why: "No prep, fits in a bag.", steps: ["Pack together."] },
+    { id: "s4", meal: "snacks", n: "Turkey Roll-Ups & Hummus", items: { deli: 1, hummus: 1, pepper: 1 }, why: "Savory option. Deli meat is salty, so rotate it.", steps: ["Roll turkey slices; dip with peppers in hummus."] },
+    { id: "s5", meal: "snacks", n: "Greek Yogurt & Almonds", items: { gy0: 1, almond: 1 }, why: "Simple and filling.", steps: ["Top yogurt with almonds."] }
+  ];
+  const IDEA_BY_ID = Object.fromEntries(IDEAS.map(i => [i.id, i]));
+  const STARTERS = { breakfast: "b1", lunch: "l1", dinner: "d1", snacks: "s1" };
 
   // ---------- State ----------
-  const KEY = "pbp-v1";
+  const KEY = "pmp-v2";
   const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
-  const defaults = { settings: { weight: 170, factor: 1.4, cal: 1700, share: 0.25 }, bowl: { gy0: 1.5, rasp: 1, chia: 1, almond: 1 }, log: {} };
-  let state = load();
-  let filter = { group: "all", q: "", sort: "density", recipe: "all" };
+  function starterPlan() {
+    const meals = {}, label = {}, idea = {};
+    MEALS.forEach(m => { const i = IDEA_BY_ID[STARTERS[m.id]]; meals[m.id] = Object.assign({}, i.items); label[m.id] = i.n; idea[m.id] = i.id; });
+    return { meals, label, idea };
+  }
+  function freshState() {
+    const s = starterPlan();
+    return {
+      settings: { protein: 200, cal: 2000, weight: null, goalw: null, split: { breakfast: 25, lunch: 30, dinner: 30, snacks: 15 } },
+      meals: s.meals, label: s.label, idea: s.idea,
+      defaults: JSON.parse(JSON.stringify(s)),
+      notes: "", log: {}
+    };
+  }
+  const SHARED_KEYS = ["settings", "meals", "label", "idea", "defaults", "notes", "log"];
+  let state = loadLocal();
+  const ui = { view: "plan", meal: "breakfast", q: "", group: "all", sort: "density", showAll: false, ideaMeal: "all", days: 7 };
 
-  function load() {
+  function loadLocal() {
+    const base = freshState();
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) {
-        const s = JSON.parse(raw);
-        return { settings: Object.assign({}, defaults.settings, s.settings), bowl: s.bowl || {}, log: s.log || {} };
-      }
-    } catch (e) { /* storage blocked: fall back to defaults */ }
-    return JSON.parse(JSON.stringify(defaults));
+      if (raw) return mergeShared(base, JSON.parse(raw));
+    } catch (e) { /* storage blocked */ }
+    return base;
   }
-  function persist() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ } }
+  function mergeShared(base, s) {
+    const out = Object.assign({}, base);
+    SHARED_KEYS.forEach(k => { if (s && s[k] !== undefined && s[k] !== null) out[k] = JSON.parse(JSON.stringify(s[k])); });
+    out.settings = Object.assign({}, base.settings, out.settings);
+    out.settings.split = Object.assign({}, base.settings.split, out.settings.split);
+    ["meals", "label", "idea"].forEach(k => { out[k] = Object.assign({}, out[k]); });
+    out.defaults = Object.assign({ meals: {}, label: {}, idea: {} }, out.defaults);
+    MEALS.forEach(m => { if (!out.meals[m.id]) out.meals[m.id] = {}; if (!out.label[m.id]) out.label[m.id] = "Custom"; });
+    // Drop foods this version doesn't know
+    MEALS.forEach(m => { Object.keys(out.meals[m.id]).forEach(id => { if (!BY_ID[id]) delete out.meals[m.id][id]; }); });
+    return out;
+  }
+  function sharedPayload() {
+    const p = {};
+    SHARED_KEYS.forEach(k => p[k] = state[k]);
+    // keep the log to the last 90 days so the shared document stays small
+    const keys = Object.keys(p.log).sort();
+    if (keys.length > 90) { p.log = {}; keys.slice(-90).forEach(k => p.log[k] = state.log[k]); }
+    return JSON.parse(JSON.stringify(p));
+  }
+  function persist() {
+    try { localStorage.setItem(KEY, JSON.stringify(sharedPayload())); } catch (e) { /* ignore */ }
+    scheduleWrite();
+  }
+
+  // ---------- Live sharing (claude.ai artifact db); falls back to this device ----------
+  let docRef = null, canWrite = true, writeTimer = null, writing = false, again = false;
+  function setSync(mode) {
+    const el = document.getElementById("sync");
+    el.className = "sync" + (mode === "live" || mode === "view" ? " live" : "");
+    el.querySelector("span").textContent = mode === "live" ? "Live: people you share with see changes" : mode === "view" ? "Live plan (view only)" : "Saved on this device";
+    document.body.classList.toggle("readonly", mode === "view");
+    if (mode === "local") {
+      $("share-text").textContent = "This copy saves on this device only. Use Copy plan as text to send it to your cook.";
+    }
+  }
+  async function initSync() {
+    if (!window.claude || typeof window.claude.use !== "function") { setSync("local"); return; }
+    let db = null;
+    try { db = await window.claude.use("db"); } catch (e) { db = null; }
+    if (!db) { setSync("local"); return; }
+    try {
+      const user = await window.claude.use("user");
+      if (user) { const c = await user.can("data.write"); if (c === false) canWrite = false; }
+    } catch (e) { /* unknown: keep editing on, a refused write decides */ }
+    docRef = db.doc("plan/current");
+    setSync(canWrite ? "live" : "view");
+    if (!canWrite) setView("cook");
+    docRef.onSnapshot(snap => {
+      if (snap.metadata && snap.metadata.hasPendingWrites) return;
+      if (writing || writeTimer) return; // our own edit is on its way and will win
+      if (snap.exists) {
+        state = mergeShared(freshState(), snap.data());
+        try { localStorage.setItem(KEY, JSON.stringify(sharedPayload())); } catch (e) { /* ignore */ }
+        renderAll();
+      }
+    }, () => { docRef = null; setSync("local"); });
+  }
+  function scheduleWrite() {
+    if (!docRef || !canWrite) return;
+    clearTimeout(writeTimer);
+    writeTimer = setTimeout(() => { writeTimer = null; flush(); }, 900);
+  }
+  async function flush() {
+    if (!docRef || !canWrite) return;
+    if (writing) { again = true; return; }
+    writing = true;
+    try { await docRef.set(sharedPayload()); }
+    catch (e) {
+      if (e && e.code === "invalid_argument") { canWrite = false; setSync("view"); }
+      else if (e && e.code === "quota_exceeded") { flashToast("toast", "Couldn't sync: storage is full.", true); }
+    }
+    writing = false;
+    if (again) { again = false; flush(); }
+  }
 
   // ---------- Math ----------
   function totals(items) {
-    const t = { k: 0, p: 0, c: 0, f: 0, fb: 0, s: 0, a: 0 };
-    for (const [id, q] of Object.entries(items)) {
-      const f = BY_ID[id]; if (!f || !q) continue;
-      for (const key in t) t[key] += f[key] * q;
-    }
+    const t = { k: 0, p: 0, c: 0, f: 0, fb: 0, a: 0 };
+    for (const id in items) { const f = BY_ID[id], q = items[id]; if (!f || !q) continue; for (const key in t) t[key] += f[key] * q; }
     return t;
   }
-  function targets() {
-    const s = state.settings;
-    const kg = s.weight / 2.2046;
-    const dailyP = Math.round(kg * s.factor);
-    const bP = Math.max(25, Math.min(40, Math.round(dailyP * 0.3)));
-    const bK = Math.round(s.cal * s.share / 10) * 10;
-    const bFb = Math.round(s.cal / 1000 * 14 * s.share);
-    const bA = Math.round(bK * 0.10 / 4);
-    return { dailyP, bP, bK, bFb, bA, dailyFb: Math.round(s.cal / 1000 * 14) };
+  function dayTotals(meals) {
+    const t = { k: 0, p: 0, c: 0, f: 0, fb: 0, a: 0 };
+    MEALS.forEach(m => { const x = totals(meals[m.id] || {}); for (const k in t) t[k] += x[k]; });
+    return t;
   }
-  const density = f => f.k ? (f.p / f.k) * 100 : 0;
+  function splitPct() {
+    const s = state.settings.split, sum = MEALS.reduce((a, m) => a + (+s[m.id] || 0), 0) || 1;
+    return Object.fromEntries(MEALS.map(m => [m.id, (+s[m.id] || 0) / sum]));
+  }
+  function mealTargets(id) {
+    const sp = splitPct()[id], s = state.settings;
+    return { p: Math.round(s.protein * sp), k: Math.round(s.cal * sp / 10) * 10, fb: Math.round(s.cal / 1000 * 14 * sp), a: Math.round(s.cal * sp * 0.10 / 4) };
+  }
+  const density = f => f.k ? f.p / f.k * 100 : 0;
   const r1 = n => Math.round(n * 10) / 10;
   const r0 = n => Math.round(n);
-  const qtyLabel = q => (q % 1 === 0 ? String(q) : q.toFixed(1)) + "x";
-
-  // ---------- Rendering helpers ----------
+  const qtyLabel = q => (q % 1 === 0 ? String(q) : String(r1(q))) + "×";
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+  const shortName = n => n.split(",")[0];
+  const liveIds = items => Object.keys(items || {}).filter(id => items[id] > 0 && BY_ID[id]);
 
-  function densityBadge(f) {
-    const d = density(f);
-    const cls = d >= 10 ? "hi" : d >= 5 ? "mid" : "lo";
-    return `<span class="density ${cls}" title="grams of protein per 100 calories">${r1(d)} g / 100 kcal</span>`;
-  }
-
-  function renderTargets() {
-    const t = targets(), s = state.settings;
-    $("targets").innerHTML = [
-      ["Daily protein", `${t.dailyP}<small> g</small>`, `${s.factor} g/kg at ${s.weight} lb`],
-      ["Breakfast protein", `${t.bP}<small> g min</small>`, "About 30% of daily, 25-40 g"],
-      ["Breakfast calories", `${t.bK}<small> kcal</small>`, `${Math.round(s.share * 100)}% of ${s.cal} kcal/day`],
-      ["Breakfast fiber", `${t.bFb}<small> g min</small>`, `${t.dailyFb} g/day at 14 g per 1,000 kcal`],
-      ["Added sugar", `${t.bA}<small> g max</small>`, "Under 10% of breakfast calories"]
-    ].map(([l, v, h]) => `<div class="target"><span class="eyebrow">${l}</span><span class="big">${v}</span><span class="muted" style="font-size:12px">${h}</span></div>`).join("");
-  }
-
-  function renderChips() {
-    const all = [{ id: "all", name: "All" }].concat(GROUPS);
-    $("chips").innerHTML = all.map(g => `<button class="chip" type="button" data-g="${g.id}" aria-pressed="${filter.group === g.id}">${esc(g.name)}</button>`).join("");
-    const rc = [["all", "All"], ["yogurt", "Greek yogurt"], ["switch", "Switch it up"], ["watch", "Watch out"]];
-    $("rchips").innerHTML = rc.map(([id, n]) => `<button class="chip" type="button" data-r="${id}" aria-pressed="${filter.recipe === id}">${n}</button>`).join("");
-  }
-
-  function renderFoods() {
-    const q = filter.q.trim().toLowerCase();
-    let list = FOODS.filter(f => (filter.group === "all" || f.g === filter.group) && (!q || f.n.toLowerCase().includes(q)));
-    const sorters = {
-      density: (a, b) => density(b) - density(a),
-      protein: (a, b) => b.p - a.p,
-      kcal: (a, b) => a.k - b.k,
-      name: (a, b) => a.n.localeCompare(b.n)
-    };
-    list.sort(sorters[filter.sort]);
-    if (!list.length) { $("foods").innerHTML = `<div class="food"><span></span><span class="muted">No foods match "${esc(filter.q)}".</span></div>`; return; }
-    $("foods").innerHTML = list.map(f => {
-      const qn = state.bowl[f.id] || 0;
-      const flag = f.a >= 4 ? `<span class="flag">${f.a} g added sugar</span>` : "";
-      return `<div class="food${qn ? " in" : ""}">
-        <span class="swatch" style="background:${GROUP_BY_ID[f.g].color}"></span>
-        <div style="min-width:0">
-          <div class="food-name">${esc(f.n)}</div>
-          <div class="food-meta"><span>${esc(f.sv)}</span>${densityBadge(f)}${flag}</div>
-        </div>
-        <div class="food-macros"><b>${r1(f.p)} g</b> protein<br><span class="muted num">${f.k} kcal</span></div>
-        <div class="stepper">
-          <button type="button" data-dec="${f.id}" aria-label="Remove half serving of ${esc(f.n)}">&minus;</button>
-          <span class="q">${qn ? qtyLabel(qn) : "0"}</span>
-          <button type="button" data-inc="${f.id}" aria-label="Add half serving of ${esc(f.n)}">+</button>
-        </div>
-      </div>`;
-    }).join("");
-  }
-
-  function ringSVG(p, target) {
-    const R = 52, C = 2 * Math.PI * R;
-    const pct = Math.min(1, p / target);
-    const met = p >= target;
-    return `
-      <circle cx="64" cy="64" r="${R}" fill="none" stroke="var(--sunk)" stroke-width="12"></circle>
-      <circle cx="64" cy="64" r="${R}" fill="none" stroke="${met ? "var(--good)" : "var(--protein)"}" stroke-width="12" stroke-linecap="round"
-        stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct)}" transform="rotate(-90 64 64)" style="transition:stroke-dashoffset .4s ease"></circle>
-      <text x="64" y="62" text-anchor="middle" font-size="26" fill="var(--ink)">${r0(p)}</text>
-      <text x="64" y="82" text-anchor="middle" font-size="11" fill="var(--muted)">of ${target} g protein</text>`;
-  }
-
-  function meter(label, val, target, unit, kind, color) {
-    // kind "min": reach it (good when met). "max": stay under (warn when over).
-    const pct = target ? Math.min(100, (val / target) * 100) : 0;
-    let col = color, note = "";
-    if (kind === "min" && val >= target) { col = "var(--good)"; note = " ✓"; }
-    if (kind === "max" && val > target) { col = "var(--warn)"; note = " over"; }
-    return `<div class="meter"><div class="meter-row"><span>${label}</span><span class="num">${r1(val)} / ${target} ${unit}${note}</span></div>
-      <div class="track"><div class="fill" style="width:${pct}%;background:${col}"></div></div></div>`;
-  }
-
-  function renderBowl() {
-    const t = targets(), tot = totals(state.bowl);
-    $("ring").innerHTML = ringSVG(tot.p, t.bP);
-    $("meters").innerHTML =
-      meter("Calories", tot.k, t.bK, "kcal", "max", "var(--ink)") +
-      meter("Fiber", tot.fb, t.bFb, "g", "min", "var(--fiber)") +
-      meter("Added sugar", tot.a, t.bA, "g", "max", "var(--carb)");
-
-    const pc = tot.p * 4, cc = tot.c * 4, fc = tot.f * 9, sum = pc + cc + fc || 1;
-    const parts = [["Protein", pc, "var(--protein)", tot.p], ["Carbs", cc, "var(--carb)", tot.c], ["Fat", fc, "var(--fat)", tot.f]];
-    $("splitbar").innerHTML = parts.map(([n, v, c]) => `<span style="width:${(v / sum) * 100}%;background:${c}" title="${n}"></span>`).join("");
-    $("legend").innerHTML = parts.map(([n, v, c, g]) => `<span><i style="background:${c}"></i>${n} ${r1(g)} g · ${r0((v / sum) * 100)}%</span>`).join("");
-
-    const entries = Object.entries(state.bowl).filter(([, q]) => q > 0);
-    if (!entries.length) {
-      $("items").innerHTML = `<div class="empty">Your bowl is empty. Start with Greek yogurt, or load a recommended breakfast below.</div>`;
-    } else {
-      const maxP = Math.max(...entries.map(([id, q]) => BY_ID[id].p * q), 1);
-      $("items").innerHTML = `<span class="eyebrow">Protein by item</span>` + entries
-        .sort((a, b) => BY_ID[b[0]].p * b[1] - BY_ID[a[0]].p * a[1])
-        .map(([id, q]) => {
-          const f = BY_ID[id];
-          return `<div class="item"><div style="min-width:0"><span>${esc(f.n)} <span class="muted">${qtyLabel(q)}</span></span>
-            <div class="contrib" style="width:${(f.p * q / maxP) * 100}%"></div></div>
-            <span class="num muted">${r1(f.p * q)} g · ${r0(f.k * q)}</span></div>`;
-        }).join("");
-    }
-
-    $("tips").innerHTML = suggestions(tot, t);
-    const restP = Math.max(0, t.dailyP - tot.p), restK = Math.max(0, state.settings.cal - tot.k);
-    $("rest").innerHTML = `<span class="eyebrow">Rest of today after this breakfast</span>
-      <div><b class="num">${r0(restP)} g</b> protein and <b class="num">${r0(restK)} kcal</b> left. That is about <b class="num">${r0(restP / 3)} g</b> protein per meal or snack across 3 more.</div>`;
-  }
-
-  function addButtons(ids) {
-    return `<div class="tip-adds">${ids.map(f => `<button class="add" type="button" data-inc="${f.id}">+ ${esc(f.n)} <span class="num">(+${r1(f.p)} g, ${f.k} kcal)</span></button>`).join("")}</div>`;
-  }
-
-  function suggestions(tot, t) {
-    const out = [];
-    const entries = Object.keys(state.bowl).filter(id => state.bowl[id] > 0);
-    if (!entries.length) return "";
-    const pGap = t.bP - tot.p, kLeft = t.bK - tot.k, fbGap = t.bFb - tot.fb;
-
-    // Swaps for items with a better alternative
-    const swaps = entries.map(id => BY_ID[id]).filter(f => f.swap);
-    swaps.forEach(f => {
-      const to = BY_ID[f.swap];
-      out.push(`<div class="tip warn"><span><b>Swap idea:</b> ${esc(f.n)} → ${esc(to.n)}. ${f.a ? `Cuts about ${r1(f.a * state.bowl[f.id])} g added sugar.` : `Saves calories for more protein.`}</span>
-        <div class="tip-adds"><button class="add" type="button" data-swap="${f.id}">Make the swap</button></div></div>`);
+  // ---------- Day at a glance ----------
+  function renderDay() {
+    const s = state.settings, tot = dayTotals(state.meals), goal = s.protein;
+    const R = 96, C = 2 * Math.PI * R;
+    let off = 0, arcs = "";
+    MEALS.forEach(m => {
+      const p = totals(state.meals[m.id]).p;
+      const len = Math.min(C - off, C * p / goal);
+      if (len > 0) {
+        const gap = len > 6 ? 3 : 0;
+        arcs += `<circle cx="120" cy="120" r="${R}" fill="none" stroke="${mc(m.id)}" stroke-width="22" stroke-dasharray="${Math.max(0, len - gap)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 120 120)"><title>${m.name}: ${r0(p)} g</title></circle>`;
+      }
+      off += len;
     });
+    const met = tot.p >= goal;
+    $("dayring").innerHTML = `
+      <circle cx="120" cy="120" r="${R}" fill="none" stroke="var(--sunk)" stroke-width="22"></circle>${arcs}
+      <text x="120" y="112" text-anchor="middle" font-size="44" fill="var(--ink)">${r0(tot.p)}</text>
+      <text x="120" y="138" text-anchor="middle" font-size="13" fill="var(--muted)">of ${goal} g protein</text>
+      <text x="120" y="160" text-anchor="middle" font-size="12" fill="${met ? "var(--good)" : "var(--muted)"}">${met ? "goal met ✓" : r0(goal - tot.p) + " g to go"}</text>`;
+    const pctP = tot.k ? r0(tot.p * 4 / tot.k * 100) : 0;
+    $("daystats").innerHTML = `
+      <div class="stat"><b>${r0(tot.k)}</b><span>of ${s.cal} kcal</span></div>
+      <div class="stat"><b>${r0(Math.max(0, s.cal - tot.k))}</b><span>kcal left</span></div>
+      <div class="stat"><b>${pctP}%</b><span>calories from protein</span></div>
+      <div class="stat"><b>${r0(tot.fb)} g</b><span>fiber (aim ${Math.round(s.cal / 1000 * 14)})</span></div>`;
 
-    if (!entries.some(id => BY_ID[id].base === "yogurt")) {
-      out.push(`<div class="tip"><span><b>No yogurt yet.</b> A half serving of plain Greek yogurt adds 8.5 g protein for 50 kcal, on a bowl or as a spread.</span>${addButtons([BY_ID.gy0])}</div>`);
-    }
-
-    if (pGap > 2) {
-      const picks = FOODS.filter(f => f.p >= 3 && f.a < 4 && f.k <= Math.max(kLeft, 60) + 20)
-        .sort((a, b) => density(b) - density(a)).slice(0, 4);
-      out.push(`<div class="tip"><span><b>${r0(pGap)} g short on protein.</b> ${kLeft > 0 ? `You have ${r0(kLeft)} kcal of room.` : "You are at your calorie target, so lean options only."} Best protein per calorie:</span>${addButtons(picks)}</div>`);
-    } else {
-      out.push(`<div class="tip good"><span><b>Protein target met.</b> ${r0(tot.p)} g should keep you full for the morning.</span></div>`);
-    }
-
-    if (fbGap > 1.5) {
-      const picks = ["rasp", "chia", "flax", "cinn"].map(id => BY_ID[id]).filter(f => !(state.bowl[f.id] >= 2));
-      out.push(`<div class="tip"><span><b>${r1(fbGap)} g short on fiber.</b> Fiber adds fullness for few calories:</span>${addButtons(picks.slice(0, 3))}</div>`);
-    }
-
-    if (kLeft < -40) {
-      const heavy = entries.map(id => BY_ID[id]).sort((a, b) => density(a) - density(b))[0];
-      out.push(`<div class="tip warn"><span><b>${r0(-kLeft)} kcal over.</b> The least protein-dense item is ${esc(heavy.n)}. Cut it by half a serving first.</span>
-        <div class="tip-adds"><button class="add" type="button" data-dec="${heavy.id}">− ${esc(heavy.n)}</button></div></div>`);
-    }
-    if (tot.a > t.bA) {
-      out.push(`<div class="tip warn"><span><b>Added sugar is ${r1(tot.a)} g</b>, above ${t.bA} g. Cinnamon, vanilla extract or berries sweeten without it.</span></div>`);
-    }
-    return out.join("");
-  }
-
-  function renderRecipes() {
-    const t = targets();
-    const list = RECIPES.filter(r => filter.recipe === "all" || r.tag === filter.recipe);
-    $("recipes").innerHTML = list.map(r => {
-      const tot = totals(r.items);
-      const pc = tot.p * 4, cc = tot.c * 4, fc = tot.f * 9, sum = pc + cc + fc;
-      const tag = r.tag === "yogurt" ? `<span class="tag yog">Greek yogurt</span>` : r.tag === "watch" ? `<span class="tag warn">Watch out</span>` : `<span class="tag">Switch it up</span>`;
-      const met = tot.p >= t.bP ? `<span class="tag yog">Meets your ${t.bP} g</span>` : "";
-      return `<article class="recipe${r.tag === "watch" ? " watch" : ""}">
-        <div class="tagline">${tag}${met}</div>
-        <h3>${esc(r.n)}</h3>
-        <ul>${Object.entries(r.items).map(([id, q]) => `<li>${esc(BY_ID[id].n)}, ${qtyLabel(q)} ${esc(BY_ID[id].sv)}</li>`).join("")}</ul>
-        <p class="why">${esc(r.why)}</p>
-        <div class="splitbar" style="height:8px" aria-hidden="true">
-          <span style="width:${pc / sum * 100}%;background:var(--protein)"></span><span style="width:${cc / sum * 100}%;background:var(--carb)"></span><span style="width:${fc / sum * 100}%;background:var(--fat)"></span>
+    $("meals").innerHTML = MEALS.map(m => {
+      const items = state.meals[m.id] || {}, t = totals(items), tg = mealTargets(m.id);
+      const ids = liveIds(items).sort((a, b) => BY_ID[b].p * items[b] - BY_ID[a].p * items[a]);
+      const pct = tg.p ? Math.min(100, t.p / tg.p * 100) : 0;
+      const ok = t.p >= tg.p;
+      return `<article class="meal" style="--mc:${mc(m.id)}">
+        <div class="meal-head"><span class="meal-name">${m.name}</span>${ok ? `<span class="tag good">On target</span>` : ids.length ? `<span class="tag">${r0(tg.p - t.p)} g short</span>` : ""}</div>
+        <div class="meal-title">${ids.length ? esc(state.label[m.id] || "Custom") : "Nothing planned"}</div>
+        <div class="icons">${ids.length ? ids.map(id => `<span class="ico"><span class="e" aria-hidden="true">${BY_ID[id].e}</span>${esc(shortName(BY_ID[id].n))}${items[id] !== 1 ? ` <span class="muted num">${qtyLabel(items[id])}</span>` : ""}</span>`).join("") : `<span class="empty">Pick an idea below or customize at the bottom.</span>`}</div>
+        <div class="meal-bar">
+          <div class="row"><span><span class="p">${r0(t.p)}</span> <span class="muted">/ ${tg.p} g protein</span></span><span class="num muted">${r0(t.k)} kcal</span></div>
+          <div class="track"><div class="fill" style="width:${pct}%;background:${mc(m.id)}"></div></div>
         </div>
-        <div class="recipe-stats">
-          <span><span class="p">${r0(tot.p)} g</span> protein</span>
-          <span class="num muted">${r0(tot.k)} kcal · ${r1(tot.fb)} g fiber${tot.a >= 3 ? ` · <span style="color:var(--warn)">${r0(tot.a)} g added sugar</span>` : ""}</span>
+        <div class="meal-actions edit-only">
+          <button class="btn small" type="button" data-next="${m.id}">Swap meal ↻</button>
+          <button class="btn small" type="button" data-edit="${m.id}">Customize</button>
         </div>
-        <button class="btn small" type="button" data-load="${r.id}">Load into bowl</button>
       </article>`;
     }).join("");
   }
 
+  // ---------- Ideas ----------
+  function renderIdeas() {
+    const chips = [["all", "All"]].concat(MEALS.map(m => [m.id, m.name]));
+    $("ideachips").innerHTML = chips.map(([id, n]) => `<button class="chip" type="button" data-ideameal="${id}" aria-pressed="${ui.ideaMeal === id}">${n}</button>`).join("");
+    const list = IDEAS.filter(i => ui.ideaMeal === "all" || i.meal === ui.ideaMeal);
+    $("ideas").innerHTML = list.map(i => {
+      const t = totals(i.items), tg = mealTargets(i.meal), m = MEAL_BY_ID[i.meal];
+      const pc = t.p * 4, cc = t.c * 4, fc = t.f * 9, sum = pc + cc + fc || 1;
+      const inUse = state.idea[i.meal] === i.id;
+      return `<article class="idea${i.watch ? " watch" : ""}">
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag" style="color:${mc(i.meal)}">${m.name}</span>${i.watch ? `<span class="tag warn">Watch out</span>` : t.p >= tg.p ? `<span class="tag good">Meets ${tg.p} g</span>` : ""}</div>
+        <h3>${esc(i.n)}</h3>
+        <div class="icons">${Object.keys(i.items).map(id => `<span class="ico" title="${esc(BY_ID[id].n)}"><span class="e" aria-hidden="true">${BY_ID[id].e}</span>${esc(shortName(BY_ID[id].n))}</span>`).join("")}</div>
+        <p class="why">${esc(i.why)}</p>
+        <div class="splitbar" aria-hidden="true"><span style="width:${pc / sum * 100}%;background:var(--protein)"></span><span style="width:${cc / sum * 100}%;background:var(--carb)"></span><span style="width:${fc / sum * 100}%;background:var(--fat)"></span></div>
+        <div class="idea-stats"><span><span class="p">${r0(t.p)} g</span> protein</span><span class="num muted">${r0(t.k)} kcal${t.a >= 3 ? ` · <span style="color:var(--warn)">${r0(t.a)} g added sugar</span>` : ""}</span></div>
+        <button class="btn small edit-only" type="button" data-use="${i.id}" ${inUse ? "disabled" : ""}>${inUse ? "In your day ✓" : "Use for " + m.name.toLowerCase()}</button>
+      </article>`;
+    }).join("");
+  }
+
+  // ---------- Customizer ----------
+  function renderMealTabs() {
+    $("mealtabs").innerHTML = MEALS.map(m => {
+      const t = totals(state.meals[m.id]), tg = mealTargets(m.id);
+      return `<button class="mealtab" type="button" data-meal="${m.id}" style="--mc:${mc(m.id)}" aria-pressed="${ui.meal === m.id}">${m.name}<small>${r0(t.p)}/${tg.p} g · ${r0(t.k)} kcal</small></button>`;
+    }).join("");
+    $("customize").style.setProperty("--mc", mc(ui.meal));
+  }
+  function renderGroupSelect() {
+    $("group").innerHTML = `<option value="all">All groups</option>` + GROUPS.map(([id, n]) => `<option value="${id}">${n}</option>`).join("");
+    $("group").value = ui.group;
+  }
+  function renderTiles() {
+    const short = MEAL_BY_ID[ui.meal].short, items = state.meals[ui.meal], q = ui.q.trim().toLowerCase();
+    const sorters = { density: (a, b) => density(b) - density(a), protein: (a, b) => b.p - a.p, kcal: (a, b) => a.k - b.k, name: (a, b) => a.n.localeCompare(b.n) };
+    const list = FOODS.filter(f => (ui.showAll || f.m.includes(short) || items[f.id]) && (ui.group === "all" || f.g === ui.group) && (!q || f.n.toLowerCase().includes(q))).sort(sorters[ui.sort]);
+    if (!list.length) { $("tiles").innerHTML = `<p class="empty">No foods match. Try "All foods" or clear the search.</p>`; return; }
+    $("tiles").innerHTML = list.map(f => {
+      const qn = items[f.id] || 0, d = density(f);
+      return `<div class="tile${qn ? " in" : ""}">
+        <div class="tile-top"><span class="e" aria-hidden="true">${f.e}</span><span class="pp">${r1(f.p)} g<small>${f.k} kcal</small></span></div>
+        <div><div class="tile-name">${esc(f.n)}</div><div class="tile-sv">${esc(f.sv)}</div></div>
+        <div class="dens"><div class="track"><div class="fill" style="width:${Math.min(100, d / 22 * 100)}%;background:${d >= 10 ? "var(--good)" : d >= 5 ? "var(--protein)" : "var(--muted)"}"></div></div><span>${r1(d)} g protein / 100 kcal</span></div>
+        ${f.a >= 4 ? `<span class="flag">${f.a} g added sugar</span>` : "<span></span>"}
+        <div class="stepper">
+          <button type="button" data-dec="${f.id}" aria-label="Less ${esc(f.n)}">&minus;</button>
+          <span class="q">${qn ? qtyLabel(qn) : "0"}</span>
+          <button type="button" data-inc="${f.id}" aria-label="More ${esc(f.n)}">+</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+  function meter(label, val, target, unit, kind, color) {
+    const pct = target ? Math.min(100, val / target * 100) : 0;
+    let col = color, note = "";
+    if (kind === "min" && val >= target) { col = "var(--good)"; note = " ✓"; }
+    if (kind === "max" && val > target) { col = "var(--warn)"; note = " over"; }
+    return `<div class="meter"><div class="meter-row"><span>${label}</span><span class="num">${r0(val)} / ${target} ${unit}${note}</span></div><div class="track"><div class="fill" style="width:${pct}%;background:${col}"></div></div></div>`;
+  }
+  function renderPlate() {
+    const items = state.meals[ui.meal], t = totals(items), tg = mealTargets(ui.meal), m = MEAL_BY_ID[ui.meal];
+    $("plate-head").textContent = `Your ${m.name.toLowerCase()}`;
+    const R = 52, C = 2 * Math.PI * R, pct = Math.min(1, tg.p ? t.p / tg.p : 0), met = t.p >= tg.p;
+    $("platering").innerHTML = `
+      <circle cx="65" cy="65" r="${R}" fill="none" stroke="var(--sunk)" stroke-width="13"></circle>
+      <circle cx="65" cy="65" r="${R}" fill="none" stroke="${met ? "var(--good)" : mc(ui.meal)}" stroke-width="13" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct)}" transform="rotate(-90 65 65)" style="transition:stroke-dashoffset .4s ease"></circle>
+      <text x="65" y="64" text-anchor="middle" font-size="27" fill="var(--ink)">${r0(t.p)}</text>
+      <text x="65" y="84" text-anchor="middle" font-size="11" fill="var(--muted)">of ${tg.p} g</text>`;
+    $("meters").innerHTML = meter("Calories", t.k, tg.k, "kcal", "max", "var(--ink)") + meter("Fiber", t.fb, tg.fb, "g", "min", "var(--fiber)") + meter("Added sugar", t.a, tg.a, "g", "max", "var(--carb)");
+    const pc = t.p * 4, cc = t.c * 4, fc = t.f * 9, sum = pc + cc + fc || 1;
+    const parts = [["Protein", pc, "var(--protein)", t.p], ["Carbs", cc, "var(--carb)", t.c], ["Fat", fc, "var(--fat)", t.f]];
+    $("splitbar").innerHTML = parts.map(([n, v, c]) => `<span style="width:${v / sum * 100}%;background:${c}" title="${n}"></span>`).join("");
+    $("legend").innerHTML = parts.map(([n, v, c, g]) => `<span><i style="background:${c}"></i>${n} ${r0(g)} g · ${r0(v / sum * 100)}%</span>`).join("");
+    const ids = liveIds(items).sort((a, b) => BY_ID[b].p * items[b] - BY_ID[a].p * items[a]);
+    if (!ids.length) $("items").innerHTML = `<div class="empty">Empty. Tap + on a food, or use a meal idea above.</div>`;
+    else {
+      const maxP = Math.max(...ids.map(id => BY_ID[id].p * items[id]), 1);
+      $("items").innerHTML = `<span class="eyebrow">Protein by food</span>` + ids.map(id => {
+        const f = BY_ID[id], q = items[id];
+        return `<div class="item"><span aria-hidden="true">${f.e}</span><div style="min-width:0"><span>${esc(f.n)} <span class="muted">${qtyLabel(q)}</span></span><div class="contrib" style="width:${f.p * q / maxP * 100}%"></div></div><span class="num muted">${r1(f.p * q)} g</span></div>`;
+      }).join("");
+    }
+    $("tips").innerHTML = suggestions(items, t, tg);
+  }
+  function addBtns(list) {
+    return `<div class="tip-adds">${list.map(f => `<button class="add edit-only" type="button" data-inc="${f.id}">${f.e} ${esc(shortName(f.n))} <span class="num">+${r1(f.p)} g · ${f.k} kcal</span></button>`).join("")}</div>`;
+  }
+  function suggestions(items, t, tg) {
+    const ids = liveIds(items);
+    if (!ids.length) return "";
+    const out = [], short = MEAL_BY_ID[ui.meal].short;
+    const pGap = tg.p - t.p, kLeft = tg.k - t.k, fbGap = tg.fb - t.fb;
+    ids.map(id => BY_ID[id]).filter(f => f.swap).forEach(f => {
+      const to = BY_ID[f.swap];
+      out.push(`<div class="tip warn"><span><b>Swap:</b> ${esc(f.n)} → ${esc(to.n)}. ${f.a ? `Cuts ${r1(f.a * items[f.id])} g added sugar.` : "More protein per calorie."}</span><div class="tip-adds"><button class="add edit-only" type="button" data-swap="${f.id}">Make the swap</button></div></div>`);
+    });
+    if (pGap > 2) {
+      const picks = FOODS.filter(f => f.m.includes(short) && f.p >= 5 && f.a < 4 && f.k <= Math.max(kLeft, 80) + 30).sort((a, b) => density(b) - density(a)).slice(0, 4);
+      out.push(`<div class="tip"><span><b>${r0(pGap)} g short on protein.</b> ${kLeft > 0 ? `${r0(kLeft)} kcal of room left.` : "At this meal's calorie share, so lean picks only."} Most protein per calorie:</span>${addBtns(picks)}</div>`);
+    } else {
+      out.push(`<div class="tip good"><span><b>Protein target met</b> for ${MEAL_BY_ID[ui.meal].name.toLowerCase()}.</span></div>`);
+    }
+    if (fbGap > 2) {
+      const fiberPicks = (short === "b" || short === "s" ? ["rasp", "chia", "flax"] : ["broccoli", "beans", "greenbeans"]).map(id => BY_ID[id]);
+      out.push(`<div class="tip"><span><b>${r0(fbGap)} g short on fiber.</b> Adds fullness for few calories:</span>${addBtns(fiberPicks)}</div>`);
+    }
+    if (kLeft < -50) {
+      const heavy = ids.map(id => BY_ID[id]).sort((a, b) => density(a) - density(b))[0];
+      out.push(`<div class="tip warn"><span><b>${r0(-kLeft)} kcal over</b> this meal's share. Least protein-dense item: ${esc(heavy.n)}.</span><div class="tip-adds"><button class="add edit-only" type="button" data-dec="${heavy.id}">− ${esc(shortName(heavy.n))}</button></div></div>`);
+    }
+    return out.join("");
+  }
+
+  // ---------- Week chart (stacked by meal) ----------
   function lastDays(n) {
     const out = [], d = new Date();
-    for (let i = n - 1; i >= 0; i--) {
-      const x = new Date(d); x.setDate(d.getDate() - i);
-      x.setMinutes(x.getMinutes() - x.getTimezoneOffset());
-      out.push(x.toISOString().slice(0, 10));
-    }
+    for (let i = n - 1; i >= 0; i--) { const x = new Date(d); x.setDate(d.getDate() - i); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); out.push(x.toISOString().slice(0, 10)); }
     return out;
   }
-
   function renderWeek() {
-    const t = targets(), days = lastDays(7);
-    const vals = days.map(d => state.log[d] ? totals(state.log[d]).p : null);
-    const W = 560, H = 220, padL = 34, padR = 10, padT = 14, padB = 34;
-    const maxV = Math.max(50, t.bP + 10, ...vals.filter(v => v !== null).map(v => Math.ceil(v / 10) * 10));
-    const y = v => padT + (H - padT - padB) * (1 - v / maxV);
+    const goal = state.settings.protein, days = lastDays(7);
+    const W = 600, H = 250, padL = 40, padR = 12, padT = 16, padB = 34;
+    const vals = days.map(d => state.log[d] ? MEALS.map(m => totals(state.log[d][m.id] || {}).p) : null);
+    const maxV = Math.max(goal + 40, ...vals.filter(Boolean).map(v => v.reduce((a, b) => a + b, 0) + 20));
+    const top = Math.ceil(maxV / 50) * 50;
+    const y = v => padT + (H - padT - padB) * (1 - v / top);
     const bw = (W - padL - padR) / 7;
-    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Breakfast protein for the last 7 days">`;
-    for (let v = 0; v <= maxV; v += 10) {
-      if (v % 20 !== 0 && maxV > 60) continue;
-      svg += `<line x1="${padL}" x2="${W - padR}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"></line>
-              <text x="${padL - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
-    }
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Protein by meal for the last 7 days">`;
+    for (let v = 0; v <= top; v += 50) svg += `<line x1="${padL}" x2="${W - padR}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"></line><text x="${padL - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
     days.forEach((d, i) => {
       const x = padL + i * bw + bw * 0.2, w = bw * 0.6, v = vals[i];
-      const dt = new Date(d + "T12:00:00");
-      const lab = dt.toLocaleDateString(undefined, { weekday: "short" });
-      if (v !== null) {
-        const met = v >= t.bP;
-        svg += `<rect x="${x}" y="${y(v)}" width="${w}" height="${y(0) - y(v)}" rx="4" fill="${met ? "var(--good)" : "var(--protein)"}"><title>${d}: ${r0(v)} g</title></rect>
-                <text x="${x + w / 2}" y="${y(v) - 5}" text-anchor="middle" style="fill:var(--ink)">${r0(v)}</text>`;
-      } else {
-        svg += `<rect x="${x}" y="${y(0) - 3}" width="${w}" height="3" rx="1.5" fill="var(--line)"></rect>`;
-      }
+      const lab = new Date(d + "T12:00:00").toLocaleDateString(undefined, { weekday: "short" });
+      if (v) {
+        let acc = 0;
+        v.forEach((p, j) => { if (p > 0) { svg += `<rect x="${x}" y="${y(acc + p)}" width="${w}" height="${y(acc) - y(acc + p)}" fill="${mc(MEALS[j].id)}"><title>${MEALS[j].name}: ${r0(p)} g</title></rect>`; acc += p; } });
+        svg += `<text x="${x + w / 2}" y="${y(acc) - 5}" text-anchor="middle" style="fill:${acc >= goal ? "var(--good)" : "var(--ink)"}">${r0(acc)}</text>`;
+      } else svg += `<rect x="${x}" y="${y(0) - 3}" width="${w}" height="3" rx="1.5" fill="var(--line)"></rect>`;
       svg += `<text x="${x + w / 2}" y="${H - 12}" text-anchor="middle"${d === today() ? ' style="fill:var(--ink);font-weight:700"' : ""}>${lab}</text>`;
     });
-    svg += `<line x1="${padL}" x2="${W - padR}" y1="${y(t.bP)}" y2="${y(t.bP)}" stroke="var(--ink)" stroke-dasharray="5 4" stroke-width="1.5"></line>
-            <text x="${W - padR}" y="${y(t.bP) - 6}" text-anchor="end" style="fill:var(--ink)">target ${t.bP} g</text></svg>`;
-    const logged = vals.filter(v => v !== null).length;
-    $("chart").innerHTML = svg + (logged ? "" : `<p class="muted" style="font-size:13px;margin-top:8px">No saved breakfasts this week yet. Build one above and press "Save to log".</p>`);
-
-    // Variety by protein base
-    const counts = {};
-    Object.keys(BASE_NAMES).forEach(b => counts[b] = days.map(d => !!(state.log[d] && Object.keys(state.log[d]).some(id => BY_ID[id] && BY_ID[id].base === b && state.log[d][id] > 0))));
-    $("variety").innerHTML = Object.entries(BASE_NAMES).map(([b, name]) => {
-      const n = counts[b].filter(Boolean).length;
-      return `<div class="vrow"><span>${name}</span><span class="dots">${counts[b].map(on => `<i class="${on ? "on" : ""}"></i>`).join("")}</span><span class="num muted">${n}/7</span></div>`;
-    }).join("");
-
-    const yog = counts.yogurt.filter(Boolean).length;
-    const used = new Set(days.flatMap(d => state.log[d] ? Object.keys(state.log[d]) : []));
-    const fresh = RECIPES.filter(r => r.tag === "switch" && !Object.keys(r.items).every(id => used.has(id)));
-    const pick = fresh[(new Date().getDate()) % Math.max(1, fresh.length)] || RECIPES[6];
-    let msg;
-    if (!logged) msg = `Save a few days to see your patterns. Greek yogurt most days is fine; rotating toppings keeps it from getting old.`;
-    else if (yog >= 5) msg = `Greek yogurt ${yog} of 7 days. That is a solid habit. For a change, try <b>${esc(pick.n)}</b>.`;
-    else if (yog === 0) msg = `No Greek yogurt logged this week. The <b>Berry Chia Yogurt Bowl</b> gives about 40 g protein for about 370 kcal.`;
-    else msg = `Good mix this week. Next idea: <b>${esc(pick.n)}</b>.`;
-    const loadId = yog === 0 && logged ? "r1" : pick.id;
-    $("variety-tip").innerHTML = `<span>${msg}</span><div class="tip-adds"><button class="add" type="button" data-load="${loadId}">Load it</button></div>`;
+    svg += `<line x1="${padL}" x2="${W - padR}" y1="${y(goal)}" y2="${y(goal)}" stroke="var(--ink)" stroke-dasharray="5 4" stroke-width="1.5"></line><text x="${W - padR}" y="${y(goal) - 6}" text-anchor="end" style="fill:var(--ink)">goal ${goal} g</text></svg>`;
+    const legend = `<div class="legend" style="margin-top:8px">${MEALS.map(m => `<span><i style="background:${mc(m.id)}"></i>${m.name}</span>`).join("")}</div>`;
+    const any = vals.some(Boolean);
+    $("chart").innerHTML = svg + legend + (any ? "" : `<p class="muted" style="font-size:13px;margin-top:8px">Nothing saved this week yet. Press "Save today's plan to log" at the end of the day.</p>`);
   }
 
+  // ---------- Settings ----------
   function renderSettings() {
     const s = state.settings;
-    $("s-weight").value = s.weight; $("s-factor").value = String(s.factor);
-    $("s-cal").value = s.cal; $("s-share").value = String(s.share);
+    const set = (id, v) => { if (document.activeElement !== $(id)) $(id).value = v; };
+    set("s-protein", s.protein); set("s-cal", s.cal); set("s-weight", s.weight || ""); set("s-goalw", s.goalw || "");
+    const rng = w => `${r0(w * 0.7)}-${r0(w * 1.0)} g`;
+    const hints = [];
+    if (s.weight) hints.push(`0.7-1.0 g/lb of current weight: ${rng(s.weight)}`);
+    if (s.goalw) hints.push(`of goal weight: ${rng(s.goalw)}`);
+    $("s-protein-hint").textContent = hints.length ? hints.join("; ") : "Add your weight to see the 0.7-1.0 g/lb range.";
+    $("s-cal-hint").textContent = `Protein alone is ${r0(s.protein * 4)} kcal (${r0(s.protein * 4 / s.cal * 100)}% of ${s.cal}).`;
+    if (!document.activeElement || !document.activeElement.id.startsWith("sp-")) {
+      $("splitfields").innerHTML = MEALS.map(m => `<div class="field"><label for="sp-${m.id}" style="color:${mc(m.id)}">${m.name} %</label><input id="sp-${m.id}" type="number" min="0" max="80" step="5" value="${s.split[m.id]}"></div>`).join("");
+    }
+    const sum = MEALS.reduce((a, m) => a + (+s.split[m.id] || 0), 0);
+    $("split-hint").textContent = MEALS.map(m => `${m.name} ${mealTargets(m.id).p} g`).join(" · ") + (sum !== 100 ? ` (your numbers add to ${sum}%, scaled to 100%)` : "");
   }
 
-  function renderAll() { renderTargets(); renderChips(); renderFoods(); renderBowl(); renderRecipes(); renderWeek(); }
-
-  // ---------- Events ----------
-  function change(id, delta) {
-    const q = Math.max(0, Math.min(6, (state.bowl[id] || 0) + delta));
-    if (q) state.bowl[id] = q; else delete state.bowl[id];
-    persist(); renderFoods(); renderBowl();
+  // ---------- Cook view ----------
+  function buyText(f, servings) {
+    const [amt, unit] = f.buy, total = amt * servings;
+    if (unit === "oz" && total >= 16) return `${r1(total)} oz (${r1(total / 16)} lb)`;
+    return `${Math.round(total * 100) / 100} ${unit}`;
   }
+  function groceryNeed() {
+    const need = {};
+    MEALS.forEach(m => { const items = state.meals[m.id] || {}; liveIds(items).forEach(id => { need[id] = (need[id] || 0) + items[id] * ui.days; }); });
+    return need;
+  }
+  function renderCook() {
+    $("cookmeals").innerHTML = MEALS.map(m => {
+      const items = state.meals[m.id] || {}, t = totals(items), ids = liveIds(items);
+      const idea = IDEA_BY_ID[state.idea[m.id]];
+      const steps = idea && ids.length ? idea.steps : null;
+      return `<article class="cook-meal" style="--mc:${mc(m.id)}">
+        <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline"><span class="meal-name">${m.name}</span><span class="num muted" style="font-size:13px">${r0(t.p)} g protein · ${r0(t.k)} kcal</span></div>
+        <h3>${ids.length ? esc(state.label[m.id] || "Custom") : "Nothing planned"}</h3>
+        ${ids.length ? `<ul>${ids.map(id => { const f = BY_ID[id]; return `<li>${f.e} ${esc(f.n)} <span class="amt">${buyText(f, items[id])}</span></li>`; }).join("")}</ul>` : ""}
+        ${steps ? `<div><span class="eyebrow">Steps${state.label[m.id] && state.label[m.id].startsWith("My ") ? " (from the original recipe)" : ""}</span><ol>${steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></div>` : ""}
+      </article>`;
+    }).join("");
+    const need = groceryNeed();
+    $("grocery").innerHTML = GROUPS.map(([g, name]) => {
+      const ids = Object.keys(need).filter(id => BY_ID[id].g === g);
+      if (!ids.length) return "";
+      return `<div><h3>${name}</h3><ul>${ids.map(id => `<li><label><input type="checkbox"> ${BY_ID[id].e} ${esc(BY_ID[id].n)}</label><span class="amt">${buyText(BY_ID[id], need[id])}</span></li>`).join("")}</ul></div>`;
+    }).join("") || `<p class="empty">No meals planned yet.</p>`;
+    if (document.activeElement !== $("notes")) $("notes").value = state.notes || "";
+    $("notes").readOnly = document.body.classList.contains("readonly");
+  }
+  function planText() {
+    const s = state.settings, lines = [`PROTEIN MEAL PLAN (goal ${s.protein} g protein, ${s.cal} kcal)`, ""];
+    MEALS.forEach(m => {
+      const items = state.meals[m.id] || {}, ids = liveIds(items), t = totals(items);
+      if (!ids.length) return;
+      lines.push(`${m.name.toUpperCase()}: ${state.label[m.id] || "Custom"} (${r0(t.p)} g protein, ${r0(t.k)} kcal)`);
+      ids.forEach(id => lines.push(`  - ${BY_ID[id].n}: ${buyText(BY_ID[id], items[id])}`));
+      const idea = IDEA_BY_ID[state.idea[m.id]];
+      if (idea) idea.steps.forEach((st, i) => lines.push(`    ${i + 1}. ${st}`));
+      lines.push("");
+    });
+    const d = dayTotals(state.meals);
+    lines.push(`DAY TOTAL: ${r0(d.p)} g protein, ${r0(d.k)} kcal`, "", `GROCERIES FOR ${ui.days} DAY${ui.days > 1 ? "S" : ""}:`);
+    const need = groceryNeed();
+    Object.keys(need).forEach(id => lines.push(`  [ ] ${BY_ID[id].n}: ${buyText(BY_ID[id], need[id])}`));
+    if (state.notes) lines.push("", "NOTES:", state.notes);
+    return lines.join("\n");
+  }
+
+  // ---------- Render ----------
+  function renderMealParts() { renderDay(); renderIdeas(); renderMealTabs(); renderTiles(); renderPlate(); if (ui.view === "cook") renderCook(); }
+  function renderAll() { renderMealParts(); renderWeek(); renderSettings(); }
+  function setView(v) {
+    ui.view = v;
+    document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === v)));
+    $("view-plan").hidden = v !== "plan"; $("view-cook").hidden = v !== "cook";
+    if (v === "cook") renderCook();
+  }
+  function flashToast(id, msg, bad) {
+    const el = $(id); el.textContent = msg; el.style.color = bad ? "var(--warn)" : "var(--good)";
+    clearTimeout(el._t); el._t = setTimeout(() => { el.textContent = ""; }, 2600);
+  }
+
+  // ---------- Actions ----------
+  const readonly = () => document.body.classList.contains("readonly");
+  function markCustom(meal) {
+    const idea = IDEA_BY_ID[state.idea[meal]];
+    const cur = state.label[meal] || "";
+    if (cur.startsWith("My ")) return;
+    state.label[meal] = idea ? "My " + idea.n : "My " + MEAL_BY_ID[meal].name.toLowerCase();
+  }
+  function changeFood(id, delta) {
+    if (readonly()) return;
+    const items = state.meals[ui.meal];
+    const q = Math.max(0, Math.min(8, (items[id] || 0) + delta));
+    if (q) items[id] = q; else delete items[id];
+    markCustom(ui.meal); persist(); renderMealParts();
+  }
+  function useIdea(i) {
+    if (readonly()) return;
+    state.meals[i.meal] = Object.assign({}, i.items); state.label[i.meal] = i.n; state.idea[i.meal] = i.id;
+    persist(); renderMealParts();
+  }
+  const smooth = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
 
   document.addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
-    if (b.dataset.inc) change(b.dataset.inc, 0.5);
-    else if (b.dataset.dec) change(b.dataset.dec, -0.5);
-    else if (b.dataset.g) { filter.group = b.dataset.g; renderChips(); renderFoods(); }
-    else if (b.dataset.r) { filter.recipe = b.dataset.r; renderChips(); renderRecipes(); }
-    else if (b.dataset.load) {
-      const r = RECIPES.find(x => x.id === b.dataset.load);
-      state.bowl = Object.assign({}, r.items); persist(); renderFoods(); renderBowl();
-      document.querySelector(".builder").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    const d = b.dataset;
+    if (d.view) setView(d.view);
+    else if (d.inc) changeFood(d.inc, 0.5);
+    else if (d.dec) changeFood(d.dec, -0.5);
+    else if (d.meal) { ui.meal = d.meal; renderMealTabs(); renderTiles(); renderPlate(); }
+    else if (d.edit) { ui.meal = d.edit; renderMealTabs(); renderTiles(); renderPlate(); $("customize").scrollIntoView({ behavior: smooth() }); }
+    else if (d.next) {
+      const list = IDEAS.filter(i => i.meal === d.next && !i.watch);
+      const cur = list.findIndex(i => i.id === state.idea[d.next]);
+      useIdea(list[(cur + 1) % list.length]);
     }
-    else if (b.dataset.swap) {
-      const f = BY_ID[b.dataset.swap], q = state.bowl[f.id];
-      delete state.bowl[f.id];
-      state.bowl[f.swap] = (state.bowl[f.swap] || 0) + (f.swap === "cinn" ? 1 : q);
-      persist(); renderFoods(); renderBowl();
+    else if (d.use) useIdea(IDEA_BY_ID[d.use]);
+    else if (d.ideameal) { ui.ideaMeal = d.ideameal; renderIdeas(); }
+    else if (d.swap && !readonly()) {
+      const items = state.meals[ui.meal], f = BY_ID[d.swap], q = items[f.id];
+      delete items[f.id]; items[f.swap] = (items[f.swap] || 0) + (f.swap === "cinn" ? 1 : q);
+      markCustom(ui.meal); persist(); renderMealParts();
     }
   });
 
-  $("clear").addEventListener("click", () => { state.bowl = {}; persist(); renderFoods(); renderBowl(); });
-  $("search").addEventListener("input", e => { filter.q = e.target.value; renderFoods(); });
-  $("sort").addEventListener("change", e => { filter.sort = e.target.value; renderFoods(); });
+  $("clear").addEventListener("click", () => { state.meals[ui.meal] = {}; state.label[ui.meal] = "Custom"; state.idea[ui.meal] = null; persist(); renderMealParts(); });
+  $("setdefault").addEventListener("click", () => {
+    state.defaults.meals[ui.meal] = Object.assign({}, state.meals[ui.meal]);
+    state.defaults.label[ui.meal] = state.label[ui.meal]; state.defaults.idea[ui.meal] = state.idea[ui.meal];
+    persist(); flashToast("ptoast", "Saved as your default");
+  });
+  $("usedefault").addEventListener("click", () => {
+    state.meals[ui.meal] = Object.assign({}, state.defaults.meals[ui.meal] || {});
+    state.label[ui.meal] = state.defaults.label[ui.meal] || "Custom"; state.idea[ui.meal] = state.defaults.idea[ui.meal] || null;
+    persist(); renderMealParts(); flashToast("ptoast", "Back to your default");
+  });
+  $("search").addEventListener("input", e => { ui.q = e.target.value; renderTiles(); });
+  $("group").addEventListener("change", e => { ui.group = e.target.value; renderTiles(); });
+  $("sort").addEventListener("change", e => { ui.sort = e.target.value; renderTiles(); });
+  $("showall").addEventListener("change", e => { ui.showAll = e.target.checked; renderTiles(); });
 
   $("save-date").value = today();
   $("save").addEventListener("click", () => {
     const d = $("save-date").value || today();
-    if (!Object.keys(state.bowl).length) { $("toast").textContent = "Add food first."; $("toast").style.color = "var(--warn)"; return; }
-    state.log[d] = Object.assign({}, state.bowl); persist(); renderWeek();
-    $("toast").style.color = "var(--good)";
-    $("toast").textContent = `Saved for ${new Date(d + "T12:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}`;
-    setTimeout(() => { $("toast").textContent = ""; }, 2500);
+    state.log[d] = JSON.parse(JSON.stringify(state.meals)); persist(); renderWeek();
+    flashToast("toast", `Saved for ${new Date(d + "T12:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}`);
   });
 
   function readSettings() {
     const s = state.settings;
-    const w = parseFloat($("s-weight").value); if (w >= 80 && w <= 500) s.weight = w;
-    s.factor = parseFloat($("s-factor").value);
-    const c = parseFloat($("s-cal").value); if (c >= 1000 && c <= 4500) s.cal = c;
-    s.share = parseFloat($("s-share").value);
-    persist(); renderTargets(); renderBowl(); renderRecipes(); renderWeek();
+    const p = parseFloat($("s-protein").value); if (p >= 60 && p <= 350) s.protein = p;
+    const c = parseFloat($("s-cal").value); if (c >= 1200 && c <= 4500) s.cal = c;
+    const w = parseFloat($("s-weight").value); s.weight = w >= 80 && w <= 600 ? w : null;
+    const g = parseFloat($("s-goalw").value); s.goalw = g >= 80 && g <= 600 ? g : null;
+    MEALS.forEach(m => { const el = $("sp-" + m.id); if (el) { const v = parseFloat(el.value); if (v >= 0 && v <= 80) s.split[m.id] = v; } });
+    persist(); renderAll();
   }
-  ["s-weight", "s-factor", "s-cal", "s-share"].forEach(id => $(id).addEventListener("change", readSettings));
-
+  $("settings").addEventListener("change", e => { if (e.target.matches("input,select") && !e.target.id.startsWith("e-")) readSettings(); });
   $("e-run").addEventListener("click", () => {
-    const sex = $("e-sex").value, age = +$("e-age").value, inch = +$("e-height").value, act = +$("e-act").value;
-    const kg = state.settings.weight / 2.2046, cm = inch * 2.54;
+    const s = state.settings;
+    if (!s.weight) { $("e-out").textContent = "Enter your current weight first."; return; }
+    const sex = $("e-sex").value, age = +$("e-age").value, cm = +$("e-height").value * 2.54, act = +$("e-act").value, kg = s.weight / 2.2046;
     const bmr = 10 * kg + 6.25 * cm - 5 * age + (sex === "m" ? 5 : -161);
-    const floor = sex === "m" ? 1500 : 1200;
-    const target = Math.max(floor, Math.round((bmr * act - 500) / 50) * 50);
-    state.settings.cal = target; $("s-cal").value = target;
-    $("e-out").textContent = `Maintenance about ${Math.round(bmr * act / 10) * 10} kcal. Using ${target} kcal/day (roughly 1 lb/week).`;
-    readSettings();
+    const target = Math.max(sex === "m" ? 1500 : 1200, Math.round((bmr * act - 500) / 50) * 50);
+    s.cal = target;
+    $("e-out").textContent = `Maintenance about ${Math.round(bmr * act / 10) * 10} kcal. Using ${target} kcal/day (about 1 lb/week).`;
+    persist(); renderAll();
   });
 
-  renderSettings(); renderAll();
+  $("days").addEventListener("change", e => { ui.days = +e.target.value; renderCook(); });
+  let notesTimer;
+  $("notes").addEventListener("input", e => {
+    if (readonly()) return;
+    state.notes = e.target.value; clearTimeout(notesTimer);
+    notesTimer = setTimeout(() => { persist(); $("notes-hint").textContent = "Saved"; setTimeout(() => { $("notes-hint").textContent = ""; }, 1500); }, 600);
+  });
+  $("copy").addEventListener("click", () => {
+    const text = planText(), fb = $("copy-fallback");
+    const fallback = () => { fb.hidden = false; fb.value = text; fb.focus(); fb.select(); flashToast("ctoast", "Select all and copy the text below"); };
+    try { navigator.clipboard.writeText(text).then(() => { fb.hidden = true; flashToast("ctoast", "Copied. Paste it into a text or email."); }, fallback); }
+    catch (err) { fallback(); }
+  });
+
+  renderGroupSelect(); renderAll(); setView("plan");
+  initSync();
 })();
 </script>
 </body>
