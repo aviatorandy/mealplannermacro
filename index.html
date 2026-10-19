@@ -191,6 +191,18 @@ button:disabled { cursor: default; opacity: .65; }
 .pick-check { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%; background: var(--good); color: var(--surface); display: grid; place-items: center; font-size: 14px; font-weight: 700; }
 .pick-chosen { position: absolute; top: 8px; left: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; background: var(--mc); color: var(--surface); padding: 2px 8px; border-radius: 999px; }
 
+.recipes { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 16px; }
+.recipe { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+.recipe-top { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; align-items: center; padding: 16px 16px 10px; background: linear-gradient(160deg, color-mix(in srgb, var(--mc) 14%, var(--surface)) 0%, var(--surface) 75%); }
+.recipe-body { padding: 4px 16px 16px; display: grid; gap: 10px; align-content: start; }
+.recipe h3 { font-size: 18px; }
+.recipe-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; }
+.recipe-meta .p { font-family: var(--font-display); font-weight: 600; font-size: 18px; color: var(--ink); }
+.recipe ul { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 3px; font-size: 13px; }
+.recipe ol { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 4px; font-size: 13px; }
+.recipe details summary { cursor: pointer; font-weight: 700; font-size: 13px; color: var(--accent); }
+.recipe .why { font-size: 13px; color: var(--muted); }
+
 /* Customizer */
 .custom { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; align-items: start; }
 .shelf { display: grid; gap: 14px; min-width: 0; }
@@ -335,6 +347,7 @@ textarea#notes { min-height: 90px; resize: vertical; }
   .day-ring { grid-template-columns: 180px minmax(0, 1fr); justify-items: stretch; text-align: left; align-items: center; }
 }
 @media (max-width: 640px) {
+  .recipes { grid-template-columns: minmax(0, 1fr); }
   .meals { grid-template-columns: minmax(0, 1fr); }
   .meal { grid-template-columns: 90px minmax(0, 1fr); }
   .day-ring { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
@@ -461,7 +474,7 @@ h3 { font-weight: 600; }
 
     <div class="folds">
     <details class="fold" id="customize">
-      <summary><span class="ficon" aria-hidden="true">🥄</span><span><h2>Customize a meal</h2><p>Build your own plate food by food</p></span></summary>
+      <summary><span class="ficon" aria-hidden="true">🥄</span><span><h2>Adjust a meal</h2><p>Change foods and portions. Meals marked eaten edit what you ate; others edit your plan.</p></span></summary>
       <div class="fold-body">
       <div class="custom">
         <div class="shelf">
@@ -600,6 +613,14 @@ h3 { font-weight: 600; }
       </div>
     </details>
     </div>
+    <section aria-labelledby="rec-head">
+      <div class="section-head">
+        <h2 id="rec-head">Recipes to try</h2>
+        <p class="muted">Full recipes with amounts and steps. Add one to your plan and it shows up in your day, Cook view and grocery list.</p>
+        <div class="chips" id="recchips" role="group" aria-label="Recipe filter"></div>
+      </div>
+      <div class="recipes" id="recipes"></div>
+    </section>
   </div>
 
   <!-- ================= MEAL BOARD ================= -->
@@ -839,6 +860,19 @@ h3 { font-weight: 600; }
     { id: "s6", meal: "snacks", n: "Oikos Pro Cup", items: { oikospro: 1 }, why: "20 g protein in one cup, no prep.", steps: ["Grab a cup."] },
     { id: "s5", meal: "snacks", n: "Edamame & Greek Yogurt Dip", items: { edamame: 1, gy0: 1, pepper: 1 }, why: "Counts toward beans and veggies at the same time.", steps: ["Season yogurt with garlic, lemon and dill.", "Dip peppers; eat edamame on the side."] }
   ];
+  IDEAS.push(
+    { id: "b8", meal: "breakfast", n: "Blender Protein Pancakes", items: { oats: 1, ew: 1, gy0: 1, whey: 0.5, blue: 1 }, why: "Tastes like a treat, about 48 g protein.", steps: ["Blend oats, egg whites, Greek yogurt and whey until smooth.", "Cook small pancakes in a nonstick pan, 2 min per side.", "Top with blueberries and a spoon of yogurt."] },
+    { id: "b9", meal: "breakfast", n: "Egg Muffins (make ahead)", items: { ew: 2, egg: 2, spinach: 1, pepper: 1, feta: 0.5 }, why: "Bake a tray on Sunday; reheat 30 sec each morning.", steps: ["Heat oven to 350°F and grease a 6-cup muffin tin.", "Whisk egg whites and eggs; stir in chopped spinach, pepper and feta.", "Pour into cups and bake 20 min until set. Keeps 4 days in the fridge."] },
+    { id: "l7", meal: "lunch", n: "Chicken Burrito Bowl", items: { chicken: 1.5, beans: 1, rice: 1, salsa: 1, greens: 1, gy0: 0.5, avocado: 0.5 }, why: "Chipotle-style at home, with yogurt in place of sour cream.", steps: ["Season chicken with cumin, chili powder and lime; cook or reheat.", "Layer rice, beans and greens; add sliced chicken.", "Top with salsa, avocado and a spoon of yogurt."] },
+    { id: "d8", meal: "dinner", n: "Lighter Chicken Teriyaki", items: { chicken: 1.5, rice: 1, broccoli: 1, pepper: 1, honey: 1, oil: 1 }, why: "Your takeout favorite with more protein and a sauce you control.", steps: ["Mix 2 tbsp low-sodium soy sauce, 1 tsp honey, grated ginger and garlic.", "Stir-fry sliced chicken in oil 5-6 min; add broccoli and pepper for 3 min.", "Pour in sauce, cook 1 min until glossy; serve over rice."] },
+    { id: "d9", meal: "dinner", n: "Turkey & Bean Chili (meal prep)", items: { turkey99: 2, beans: 1, marinara: 1, pepper: 1, gy0: 0.5 }, why: "Makes great leftovers; freezes well.", steps: ["Brown turkey with onion and garlic.", "Add beans, marinara, chopped pepper, chili powder and cumin; simmer 20 min.", "Serve topped with Greek yogurt."] },
+    { id: "s7", meal: "snacks", n: "Cottage Cheese Toast", items: { toast: 1, cott: 2, straw: 1 }, why: "Sweet, crunchy and almost 30 g protein.", steps: ["Toast bread; spread with cottage cheese.", "Top with sliced strawberries and a pinch of cinnamon."] }
+  );
+  // Prep time (minutes) and tags for the recipe section
+  const RMETA = { b1: [3], b2: [3], b3: [5], b4: [10], b5: [5, "Make ahead"], b6: [8], b7: [2], b8: [15], b9: [25, "Make ahead"],
+    l1: [10, "Make ahead"], l2: [5], l3: [15], l4: [10], l5: [20], l6: [0, "Takeout"], l7: [15, "Make ahead"],
+    d1: [25], d2: [20], d3: [15], d4: [25], d5: [30, "Make ahead"], d6: [20], d7: [0, "Takeout"], d8: [25], d9: [35, "Make ahead"],
+    s1: [1], s2: [2], s3: [1], s4: [3], s5: [3], s6: [1], s7: [5] };
   const IDEA_BY_ID = Object.fromEntries(IDEAS.map(i => [i.id, i]));
   const STARTERS = { breakfast: "b1", lunch: "l1", dinner: "d1", snacks: "s1" };
 
@@ -1236,8 +1270,8 @@ h3 { font-weight: 600; }
   // ---------- Customizer ----------
   function renderMealTabs() {
     $("mealtabs").innerHTML = MEALS.map(m => {
-      const t = totals(state.meals[m.id]), tg = mealTargets(m.id);
-      return `<button class="mealtab" type="button" data-meal="${m.id}" style="--mc:${mc(m.id)}" aria-pressed="${ui.meal === m.id}">${m.name}<small>${r0(t.p)}/${tg.p} g · ${r0(t.k)} kcal</small></button>`;
+      const et = editTarget(m.id), t = totals(et.items), tg = mealTargets(m.id);
+      return `<button class="mealtab" type="button" data-meal="${m.id}" style="--mc:${mc(m.id)}" aria-pressed="${ui.meal === m.id}">${m.name}${et.eaten ? " ✓" : ""}<small>${r0(t.p)}/${tg.p} g · ${r0(t.k)} kcal</small></button>`;
     }).join("");
     $("customize").style.setProperty("--mc", mc(ui.meal));
   }
@@ -1246,7 +1280,7 @@ h3 { font-weight: 600; }
     $("group").value = ui.group;
   }
   function renderTiles() {
-    const short = MEAL_BY_ID[ui.meal].short, items = state.meals[ui.meal], q = ui.q.trim().toLowerCase();
+    const short = MEAL_BY_ID[ui.meal].short, items = editTarget(ui.meal).items, q = ui.q.trim().toLowerCase();
     const sorters = { density: (a, b) => density(b) - density(a), protein: (a, b) => b.p - a.p, kcal: (a, b) => a.k - b.k, name: (a, b) => a.n.localeCompare(b.n) };
     const list = FOODS.filter(f => (ui.showAll || f.m.includes(short) || items[f.id]) && (ui.group === "all" || f.g === ui.group) && (!q || f.n.toLowerCase().includes(q))).sort(sorters[ui.sort]);
     if (!list.length) { $("tiles").innerHTML = `<p class="empty">No foods match. Try "All foods" or clear the search.</p>`; return; }
@@ -1273,8 +1307,8 @@ h3 { font-weight: 600; }
     return `<div class="meter"><div class="meter-row"><span>${label}</span><span class="num">${r0(val)} / ${target} ${unit}${note}</span></div><div class="track"><div class="fill" style="width:${pct}%;background:${col}"></div></div></div>`;
   }
   function renderPlate() {
-    const items = state.meals[ui.meal], t = totals(items), tg = mealTargets(ui.meal), m = MEAL_BY_ID[ui.meal];
-    $("plate-head").textContent = `Your ${m.name.toLowerCase()}`;
+    const et = editTarget(ui.meal), items = et.items, t = totals(items), tg = mealTargets(ui.meal), m = MEAL_BY_ID[ui.meal];
+    $("plate-head").textContent = et.eaten ? `What you ate for ${m.name.toLowerCase()}` : `Your ${m.name.toLowerCase()} plan`;
     const R = 52, C = 2 * Math.PI * R, pct = Math.min(1, tg.p ? t.p / tg.p : 0), met = t.p >= tg.p;
     $("platering").innerHTML = `<circle cx="65" cy="65" r="${R}" fill="none" stroke="var(--sunk)" stroke-width="13"></circle>
       <circle cx="65" cy="65" r="${R}" fill="none" stroke="${met ? "var(--good)" : mc(ui.meal)}" stroke-width="13" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct)}" transform="rotate(-90 65 65)" style="transition:stroke-dashoffset .4s ease"></circle>
@@ -1683,7 +1717,28 @@ h3 { font-weight: 600; }
   }
 
   // ---------- Render + view ----------
-  function renderMealParts() { renderFridge(); renderDay(); renderStickers(); renderIdeas(); renderMealTabs(); renderTiles(); renderPlate(); if (ui.view === "cook") renderCook(); }
+  function renderRecipes() {
+    const f = ui.recFilter || "all";
+    const chips = [["all", "All"]].concat(MEALS.map(m => [m.id, m.name]), [["quick", "10 min or less"], ["prep", "Make ahead"]]);
+    $("recchips").innerHTML = chips.map(([id, n]) => `<button class="chip" type="button" data-recf="${id}" aria-pressed="${f === id}">${n}</button>`).join("");
+    const list = IDEAS.filter(i => !i.watch && (RMETA[i.id] || [0])[0] > 0 && (f === "all" || i.meal === f || (f === "quick" && RMETA[i.id][0] <= 10) || (f === "prep" && RMETA[i.id][1] === "Make ahead")));
+    $("recipes").innerHTML = list.map(i => {
+      const t = totals(i.items), m = MEAL_BY_ID[i.meal], [mins, tag] = RMETA[i.id];
+      const inUse = state.idea[i.meal] === i.id && state.label[i.meal] === i.n;
+      return `<article class="recipe" style="--mc:${mc(i.meal)}">
+        <div class="recipe-top"><div>${plateSVG(i.items, i.meal)}</div>
+          <div style="display:grid;gap:4px;min-width:0"><span class="meal-name">${m.name}</span><h3>${esc(i.n)}</h3>
+            <div class="recipe-meta"><span><span class="p">${r0(t.p)}</span> g protein</span><span class="muted">· ${r0(t.k)} kcal · ${mins} min</span>${tag ? `<span class="tag">${tag}</span>` : ""}</div></div></div>
+        <div class="recipe-body">
+          <p class="why">${esc(i.why)}</p>
+          <ul>${liveIds(i.items).map(id => `<li><span class="emo">${BY_ID[id].e}</span> ${esc(BY_ID[id].n)} <span class="amt">${buyText(BY_ID[id], i.items[id])}</span></li>`).join("")}</ul>
+          <details><summary>How to make it</summary><ol>${i.steps.map(st => `<li>${esc(st)}</li>`).join("")}</ol></details>
+          <button class="btn small ${inUse ? "" : "primary"}" type="button" data-use="${i.id}" ${inUse ? "disabled" : ""}>${inUse ? "In your plan ✓" : "Add to my " + m.name.toLowerCase()}</button>
+        </div>
+      </article>`;
+    }).join("");
+  }
+  function renderMealParts() { renderFridge(); renderDay(); renderStickers(); renderIdeas(); renderRecipes(); renderMealTabs(); renderTiles(); renderPlate(); if (ui.view === "cook") renderCook(); }
   function renderAll() { renderMealParts(); renderWeek(); renderSettings(); renderCookShare(); }
   function setView(v) {
     ui.view = v;
@@ -1704,10 +1759,17 @@ h3 { font-weight: 600; }
     const idea = IDEA_BY_ID[state.idea[meal]];
     state.label[meal] = idea ? "My " + idea.n : "My " + MEAL_BY_ID[meal].name.toLowerCase();
   }
+  function editTarget(meal) {
+    const d = today();
+    if (state.log[d] && state.log[d][meal]) return { items: state.log[d][meal], eaten: true };
+    return { items: state.meals[meal], eaten: false };
+  }
   function changeFood(id, delta) {
-    const items = state.meals[ui.meal], q = Math.max(0, Math.min(8, (items[id] || 0) + delta));
+    const tg = editTarget(ui.meal), items = tg.items, old = items[id] || 0, q = Math.max(0, Math.min(8, old + delta));
     if (q) items[id] = q; else delete items[id];
-    markCustom(ui.meal); persist(); renderMealParts();
+    if (tg.eaten) { if (state.pantry[id] && state.deducted[today() + ":" + ui.meal]) addStock(id, -(q - old)); renderWeek(); }
+    else markCustom(ui.meal);
+    persist(); renderMealParts();
   }
   function useIdea(i) {
     state.meals[i.meal] = Object.assign({}, i.items); state.label[i.meal] = i.n; state.idea[i.meal] = i.id;
@@ -1728,6 +1790,7 @@ h3 { font-weight: 600; }
     }
     else if (d.use) useIdea(IDEA_BY_ID[d.use]);
     else if (d.share) openComposer(d.share);
+    else if (d.recf) { ui.recFilter = d.recf; renderRecipes(); }
     else if (d.ate) toggleEaten(d.ate);
     else if (d.ftab) { ui.fridgeTab = d.ftab; renderFridge(); }
     else if (d.finc) { addStock(d.finc, 1); persist(); renderMealParts(); }
@@ -1744,9 +1807,9 @@ h3 { font-weight: 600; }
     else if (d.boardmeal) { ui.boardMeal = d.boardmeal; renderBoard(); }
     else if (d.cookof) { ui.cookOf = d.cookof; renderCook(); }
     else if (d.swap) {
-      const items = state.meals[ui.meal], f = BY_ID[d.swap], q = items[f.id];
+      const et = editTarget(ui.meal), items = et.items, f = BY_ID[d.swap], q = items[f.id];
       delete items[f.id]; items[f.swap] = (items[f.swap] || 0) + (f.swap === "cinn" ? 1 : q);
-      markCustom(ui.meal); persist(); renderMealParts();
+      if (!et.eaten) markCustom(ui.meal); persist(); renderMealParts();
     }
     else if (d.like) {
       if (!(acct.uid && acct.canWrite)) return;
